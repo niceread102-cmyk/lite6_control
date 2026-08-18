@@ -1,0 +1,30 @@
+running egg_info
+writing ../../build/my_lite6_control/my_lite6_control.egg-info/PKG-INFO
+writing dependency_links to ../../build/my_lite6_control/my_lite6_control.egg-info/dependency_links.txt
+writing entry points to ../../build/my_lite6_control/my_lite6_control.egg-info/entry_points.txt
+writing requirements to ../../build/my_lite6_control/my_lite6_control.egg-info/requires.txt
+writing top-level names to ../../build/my_lite6_control/my_lite6_control.egg-info/top_level.txt
+reading manifest file '../../build/my_lite6_control/my_lite6_control.egg-info/SOURCES.txt'
+writing manifest file '../../build/my_lite6_control/my_lite6_control.egg-info/SOURCES.txt'
+running build
+running build_py
+copying my_lite6_control/ik_node.py -> /home/v/lite6_ws/build/my_lite6_control/build/lib/my_lite6_control
+copying my_lite6_control/custom_ik_rotation.py -> /home/v/lite6_ws/build/my_lite6_control/build/lib/my_lite6_control
+running install
+running install_lib
+copying /home/v/lite6_ws/build/my_lite6_control/build/lib/my_lite6_control/ik_node.py -> /home/v/lite6_ws/install/my_lite6_control/lib/python3.12/site-packages/my_lite6_control
+copying /home/v/lite6_ws/build/my_lite6_control/build/lib/my_lite6_control/custom_ik_rotation.py -> /home/v/lite6_ws/install/my_lite6_control/lib/python3.12/site-packages/my_lite6_control
+byte-compiling /home/v/lite6_ws/install/my_lite6_control/lib/python3.12/site-packages/my_lite6_control/ik_node.py to ik_node.cpython-312.pyc
+byte-compiling /home/v/lite6_ws/install/my_lite6_control/lib/python3.12/site-packages/my_lite6_control/custom_ik_rotation.py to custom_ik_rotation.cpython-312.pyc
+running install_data
+running install_egg_info
+removing '/home/v/lite6_ws/install/my_lite6_control/lib/python3.12/site-packages/my_lite6_control-0.0.0-py3.12.egg-info' (and everything under it)
+Copying ../../build/my_lite6_control/my_lite6_control.egg-info to /home/v/lite6_ws/install/my_lite6_control/lib/python3.12/site-packages/my_lite6_control-0.0.0-py3.12.egg-info
+running install_scripts
+Installing ik_node script to /home/v/lite6_ws/install/my_lite6_control/lib/my_lite6_control
+Installing lite6_control script to /home/v/lite6_ws/install/my_lite6_control/lib/my_lite6_control
+Installing moveit2 script to /home/v/lite6_ws/install/my_lite6_control/lib/my_lite6_control
+Installing moveit2_servo script to /home/v/lite6_ws/install/my_lite6_control/lib/my_lite6_control
+Installing simple_detection script to /home/v/lite6_ws/install/my_lite6_control/lib/my_lite6_control
+Installing webcam script to /home/v/lite6_ws/install/my_lite6_control/lib/my_lite6_control
+writing list of installed files to '/home/v/lite6_ws/build/my_lite6_control/install.log'

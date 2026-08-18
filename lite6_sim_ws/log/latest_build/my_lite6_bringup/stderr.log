@@ -1,0 +1,5 @@
+  File "/home/x/lite6_sim_ws/install/my_lite6_bringup/lib/python3.12/site-packages/my_lite6_bringup/lab_physx.py", line 37
+    (usd_path="/home/v/IsaacSim/assets/my_lab_conveyor.usd")
+     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+SyntaxError: invalid syntax. Maybe you meant '==' or ':=' instead of '='?
+

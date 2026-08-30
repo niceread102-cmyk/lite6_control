@@ -2,14 +2,14 @@ import rclpy
 from rclpy.node import Node
 from rclpy.action import ActionClient
 from rclpy.executors import MultiThreadedExecutor
-from geometry_msgs.msg import Pose, PoseStamped
+from geometry_msgs.msg import Pose
+from sensor_msgs.msg import JointState
 from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
 from builtin_interfaces.msg import Duration
 from moveit_msgs.action import MoveGroup
-from moveit_msgs.msg import (MotionPlanRequest, Constraints,
-                              PositionConstraint, OrientationConstraint,
-                              BoundingVolume)
-from shape_msgs.msg import SolidPrimitive
+from moveit_msgs.srv import GetPositionIK
+from control_msgs.action import FollowJointTrajectory
+from my_lite6_control.moveit2_action import eef_target_from_tcp, build_ik_request, build_joint_goal
 from enum import Enum, auto
 from scipy.spatial.transform import Rotation
 import numpy as np
@@ -17,24 +17,19 @@ import subprocess
 import time
 
 
-EEF_LINK      = 'link_eef'
-BASE_FRAME    = 'link_base'
-TCP_OFFSET    = 0.0836
 HOME          = [1.0, 0.0, np.pi / 2, 0.0, np.pi / 2, 1.0]
 INIT          = [0.0, 0.0, np.pi / 2, 0.0, np.pi / 2, 0.0]
 GOAL          = [-np.pi / 2, np.pi / 2, np.pi, 0.0, np.pi / 2, -np.pi / 2]
 JOINT_NAMES   = ['joint1', 'joint2', 'joint3', 'joint4', 'joint5', 'joint6']
 APPROACH_DIST = 0.04
 DESCEND_DIST  = 0.04
-# APPROACH_DIST = 0.2
-# DESCEND_DIST  = 0.2
 VEL_SCALE     = 0.06
 ACC_SCALE     = 0.02
 
 WS_X       = (0.05, 0.45)
 WS_Y       = (-0.45, 0.45)
 WS_Z       = (0.01, 0.60)
-MAX_REACH  = 0.45
+MAX_REACH  = 0.44
 
 
 def pose_is_safe(msg: Pose, logger):
@@ -71,53 +66,6 @@ def pre_grasp_pose(msg: Pose, dist=APPROACH_DIST) -> Pose:
     return pre
 
 
-def build_move_goal(pose: Pose, vel_scale=VEL_SCALE, acc_scale=ACC_SCALE):
-    R = Rotation.from_quat([pose.orientation.x, pose.orientation.y,
-                                   pose.orientation.z, pose.orientation.w]).as_matrix()
-    tcp_pos = np.array([pose.position.x, pose.position.y, pose.position.z])
-    eef_pos = tcp_pos - R @ np.array([0.0, 0.0, TCP_OFFSET])
-
-    target = PoseStamped()
-    target.header.frame_id = BASE_FRAME
-    target.pose.position.x, target.pose.position.y, target.pose.position.z = eef_pos.tolist()
-    target.pose.orientation = pose.orientation
-
-    sphere = SolidPrimitive(type=SolidPrimitive.SPHERE, dimensions=[0.005])
-    bv     = BoundingVolume(primitives=[sphere], primitive_poses=[target.pose])
-
-    pos_con                   = PositionConstraint()
-    pos_con.header            = target.header
-    pos_con.link_name         = EEF_LINK
-    pos_con.constraint_region = bv
-    pos_con.weight            = 1.0
-
-    ori_con                             = OrientationConstraint()
-    ori_con.header                      = target.header
-    ori_con.link_name                   = EEF_LINK
-    ori_con.orientation                 = target.pose.orientation
-    ori_con.absolute_x_axis_tolerance   = 0.05
-    ori_con.absolute_y_axis_tolerance   = 0.05
-    ori_con.absolute_z_axis_tolerance   = 0.05
-    ori_con.weight                      = 1.0
-
-    req                                 = MotionPlanRequest()
-    req.group_name                      = 'lite6'
-    req.planner_id                      = 'RRTConnect'
-    req.goal_constraints                = [Constraints(
-        position_constraints    = [pos_con],
-        orientation_constraints = [ori_con],
-    )]
-    req.num_planning_attempts           = 10
-    req.allowed_planning_time           = 5.0
-    req.max_velocity_scaling_factor     = vel_scale
-    req.max_acceleration_scaling_factor = acc_scale
-
-    goal_msg                             = MoveGroup.Goal()
-    goal_msg.request                     = req
-    goal_msg.planning_options.plan_only  = False
-    return goal_msg
-
-
 class ControlState(Enum):
     INIT     = auto()
     MOVE     = auto()
@@ -133,29 +81,32 @@ class ControlState(Enum):
 class SequenceRealNode(Node):
     def __init__(self):
         super().__init__('sequence_real_node')
-        self.traj_pub     = self.create_publisher(JointTrajectory, '/lite6_traj_controller/joint_trajectory', 10)
+        self._traj_client = ActionClient(self, FollowJointTrajectory,
+                                          '/lite6_traj_controller/follow_joint_trajectory')
         self.pose_sub     = self.create_subscription(Pose, '/target_pose', self._cb_target_pose, 10)
+        self.joint_state_sub = self.create_subscription(JointState, '/joint_states', self._cb_joint_state, 10)
         self._client      = ActionClient(self, MoveGroup, '/move_action')
+        self._ik_client   = self.create_client(GetPositionIK, '/compute_ik')
         self._state       = ControlState.INIT
         self._grasp_pose  = None
         self._pending_target = None
         self._busy        = False
+        self.current_joint_state = None
 
         self._startup_timer = self.create_timer(0.5, self._start_init)
 
     def _start_init(self):
         self._startup_timer.cancel()
-        move_sec = 4.0
-        self.send_home(move_sec)
+        self.send_home(4.0, on_done=self._on_init_done)
         self.call_gripper('/ufactory/open_lite6_gripper')
-        self._init_timer = self.create_timer(move_sec + 1.0, self._on_init_done)
 
-    def _on_init_done(self):
-        self._init_timer.cancel()
+    def _on_init_done(self, ok):
+        if not ok:
+            self.get_logger().error('[INIT] failed to reach home pose')
         self._state = ControlState.MOVE
         self.get_logger().info('[MOVE] waiting for target pose')
 
-    def send_home(self, move_sec=4.0):
+    def send_home(self, move_sec=4.0, on_done=None):
         pt = JointTrajectoryPoint()
         pt.positions       = HOME
         pt.time_from_start = Duration(sec=int(move_sec))
@@ -163,10 +114,10 @@ class SequenceRealNode(Node):
         jt.header.stamp = self.get_clock().now().to_msg()
         jt.joint_names  = JOINT_NAMES
         jt.points       = [pt]
-        self.traj_pub.publish(jt)
         self.get_logger().info('home')
+        self._send_traj(jt, on_done)
 
-    def send_init(self, move_sec=4.0):
+    def send_init(self, move_sec=4.0, on_done=None):
         pt = JointTrajectoryPoint()
         pt.positions       = INIT
         pt.time_from_start = Duration(sec=int(move_sec))
@@ -174,8 +125,11 @@ class SequenceRealNode(Node):
         jt.header.stamp = self.get_clock().now().to_msg()
         jt.joint_names  = JOINT_NAMES
         jt.points       = [pt]
-        self.traj_pub.publish(jt)
         self.get_logger().info('init')
+        self._send_traj(jt, on_done)
+
+    def _cb_joint_state(self, msg: JointState):
+        self.current_joint_state = msg
 
     def _cb_target_pose(self, msg: Pose):
         if self._busy:
@@ -188,14 +142,15 @@ class SequenceRealNode(Node):
         self._busy = True
         self._pending_target = msg
         self._state = ControlState.TO_INIT
-        move_sec = 4.0
         self.get_logger().info('[TO_INIT] re-homing to init pose before approaching target')
-        self.send_init(move_sec)
-        self._to_init_timer = self.create_timer(move_sec + 1.0, self._on_to_init_done)
+        self.send_init(4.0, on_done=self._on_to_init_done)
 
-    def _on_to_init_done(self):
-        self._to_init_timer.cancel()
+    def _on_to_init_done(self, ok):
         self._state = ControlState.MOVE
+        if not ok:
+            self.get_logger().error('[TO_INIT] failed to reach init pose')
+            self._busy = False
+            return
 
         msg = self._pending_target
         self._grasp_pose = msg
@@ -223,6 +178,10 @@ class SequenceRealNode(Node):
             return
 
         self._state = ControlState.GRASP
+        self._grasp_settle_timer = self.create_timer(0.3, self._do_grasp)
+
+    def _do_grasp(self):
+        self._grasp_settle_timer.cancel()
         self.get_logger().info('[GRASP] closing gripper')
         self.call_gripper('/ufactory/close_lite6_gripper')
         self._after_grasp()
@@ -243,18 +202,16 @@ class SequenceRealNode(Node):
     def _return_home(self):
         self._state = ControlState.HOME
         self.get_logger().info('[HOME] returning to init')
-        self.send_init()
-        self._home_arrive_timer = self.create_timer(5.0, self._on_home_arrived)
+        self.send_init(on_done=self._on_home_arrived)
 
-    def _on_home_arrived(self):
-        self._home_arrive_timer.cancel()
+    def _on_home_arrived(self, ok):
+        if not ok:
+            self.get_logger().error('[HOME] failed to reach init pose')
         self._state = ControlState.GOAL
         self.get_logger().info('[GOAL] moving to goal pose')
-        move_sec = 8.0
-        self.send_goal(move_sec)
-        self._goal_arrive_timer = self.create_timer(move_sec + 1.0, self._on_goal_arrived)
+        self.send_goal(8.0, on_done=self._on_goal_arrived)
 
-    def send_goal(self, move_sec=4.0):
+    def send_goal(self, move_sec=4.0, on_done=None):
         pt = JointTrajectoryPoint()
         pt.positions       = GOAL
         pt.time_from_start = Duration(sec=int(move_sec))
@@ -262,11 +219,12 @@ class SequenceRealNode(Node):
         jt.header.stamp = self.get_clock().now().to_msg()
         jt.joint_names  = JOINT_NAMES
         jt.points       = [pt]
-        self.traj_pub.publish(jt)
         self.get_logger().info('goal')
+        self._send_traj(jt, on_done)
 
-    def _on_goal_arrived(self):
-        self._goal_arrive_timer.cancel()
+    def _on_goal_arrived(self, ok):
+        if not ok:
+            self.get_logger().error('[GOAL] failed to reach goal pose')
         self._state = ControlState.DROP
         self.get_logger().info('[DROP] opening gripper')
         self.call_gripper('/ufactory/open_lite6_gripper')
@@ -276,22 +234,55 @@ class SequenceRealNode(Node):
         self._drop_timer.cancel()
         self._state = ControlState.HOME
         self.get_logger().info('[HOME] returning home')
-        self.send_home()
-        self._final_home_timer = self.create_timer(5.0, self._on_cycle_done)
+        self.send_home(on_done=self._on_cycle_done)
 
-    def _on_cycle_done(self):
-        self._final_home_timer.cancel()
+    def _on_cycle_done(self, ok):
+        if not ok:
+            self.get_logger().error('[HOME] failed to reach home pose')
         self._state = ControlState.MOVE
         self._busy = False
         self.get_logger().info('[MOVE] waiting for target pose')
 
     def _move_to(self, pose: Pose, on_done):
+        if self.current_joint_state is None:
+            self.get_logger().error('No /joint_states yet, cannot seed IK')
+            on_done(False)
+            return
+
+        if not self._ik_client.wait_for_service(timeout_sec=3.0):
+            self.get_logger().error('compute_ik service not available')
+            on_done(False)
+            return
+
+        target = eef_target_from_tcp(pose)
+        ik_req = build_ik_request(target, self.current_joint_state)
+        self._ik_client.call_async(ik_req).add_done_callback(
+            lambda future: self._on_ik_result(future, on_done))
+
+    def _on_ik_result(self, future, on_done):
+        response = future.result()
+        if response.error_code.val != 1:
+            self.get_logger().error(f'[FAIL] compute_ik error_code={response.error_code.val}')
+            on_done(False)
+            return
+
+        solved = dict(zip(response.solution.joint_state.name,
+                           response.solution.joint_state.position))
+        try:
+            joint_targets = [solved[n] for n in JOINT_NAMES]
+        except KeyError:
+            self.get_logger().error('IK solution missing expected joints')
+            on_done(False)
+            return
+
         if not self._client.wait_for_server(timeout_sec=3.0):
             self.get_logger().error('MoveGroup not available')
             on_done(False)
             return
 
-        goal = build_move_goal(pose)
+        # real executes immediately — no manual follow_joint_trajectory forwarding
+        # (unlike sim's _on_ik_result), MoveGroup runs the trajectory itself.
+        goal = build_joint_goal(joint_targets, VEL_SCALE, ACC_SCALE, plan_only=False)
         self._client.send_goal_async(goal).add_done_callback(
             lambda future: self._goal_cb(future, on_done))
 
@@ -314,6 +305,36 @@ class SequenceRealNode(Node):
             return
 
         on_done(True)
+
+    def _send_traj(self, jt: JointTrajectory, on_done=None):
+        if not self._traj_client.wait_for_server(timeout_sec=3.0):
+            self.get_logger().error('follow_joint_trajectory action server not available')
+            if on_done:
+                on_done(False)
+            return
+
+        goal = FollowJointTrajectory.Goal()
+        goal.trajectory = jt
+        self._traj_client.send_goal_async(goal).add_done_callback(
+            lambda future: self._traj_goal_cb(future, on_done))
+
+    def _traj_goal_cb(self, future, on_done):
+        handle = future.result()
+        if not handle.accepted:
+            self.get_logger().warn('Trajectory goal rejected')
+            if on_done:
+                on_done(False)
+            return
+        handle.get_result_async().add_done_callback(
+            lambda future: self._traj_result_cb(future, on_done))
+
+    def _traj_result_cb(self, future, on_done):
+        result = future.result().result
+        ok = (result.error_code == FollowJointTrajectory.Result.SUCCESSFUL)
+        if not ok:
+            self.get_logger().error(f'[FAIL] Trajectory execution error_code={result.error_code}')
+        if on_done:
+            on_done(ok)
 
     def call_gripper(self, srv_name):
         subprocess.run(

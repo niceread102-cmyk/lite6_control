@@ -20,32 +20,33 @@ def euler_rotation_matrix(x, y, z):
 list_pose = []
 BASE_Z = np.array([0.0, 0.0, 1.0]) # Robot base Z
 
-DEFAULT_LOCAL_OFFSET = np.array([-0.01, -0.002, 0.0115])
-FLIP_LOCAL_OFFSET_TOP = np.array([0.015, -0.035, 0.0422])
-FLIP_LOCAL_OFFSET_DOWN = np.array([0.015, -0.035, -0.0508])
-SIDE_LOCAL_OFFSET_TOP = np.array([0.015, -0.035, 0.039])
-SIDE_LOCAL_OFFSET_DOWN = np.array([0.015, -0.035, -0.047]) 
+DEFAULT_LOCAL_OFFSET = np.array([-0.005243, 0.007267, 0.011494])
+SIDE_LOCAL_OFFSET_TOP = np.array([0.011240, -0.03650, 0.03325])
+SIDE_LOCAL_OFFSET_DOWN = np.array([0.011240, -0.03650, -0.042]) 
+FLIP_LOCAL_OFFSET_TOP = np.array([0.013, -0.03650, 0.0422])
+FLIP_LOCAL_OFFSET_DOWN = np.array([0.013, -0.03650, -0.04978])
 
 SIDE_THRESHOLD_DEG = 50.0
 
 def classify_pose(num):
+    # obj_x vs base_z (world up) is the sole classification axis:
+    #   obj_x ~ -base_z (angle -> 180)  => (upright)
+    #   obj_x ⊥ base_z  (angle ~ 90)    => (side)
+    #   obj_x ~ +base_z (angle -> 0)    => (flipped)
     obj_x = num[:, 0]
     obj_x = obj_x / np.linalg.norm(obj_x)
-    obj_z = num[:, 2]
-    obj_z = obj_z / np.linalg.norm(obj_z)
 
-    z_cos = np.dot(obj_z, BASE_Z)
-    z_angle = np.degrees(np.arccos(np.clip(z_cos, -1.0, 1.0)))
+    x_cos = np.dot(obj_x, BASE_Z)
+    x_angle = np.degrees(np.arccos(np.clip(x_cos, -1.0, 1.0)))
 
-    if z_angle < SIDE_THRESHOLD_DEG or z_angle > (180.0 - SIDE_THRESHOLD_DEG):
-        print(f"obj_z·base_z = {z_cos:.3f}  angle={z_angle:.1f}deg  -> 측면")
-        return "측면"
+    if x_angle > (180.0 - SIDE_THRESHOLD_DEG):
+        pose = "upright"
+    elif x_angle < SIDE_THRESHOLD_DEG:
+        pose = "flipped"
+    else:
+        pose = "side"
 
-    cos_sim = np.dot(obj_x, BASE_Z)
-    angle = np.degrees(np.arccos(np.clip(cos_sim, -1.0, 1.0)))
-
-    pose = "기본자세" if cos_sim < 0 else "뒤집어짐"
-    print(f"obj_x·base_z = {cos_sim:.3f}  angle={angle:.1f}deg  -> {pose}")
+    print(f"obj_x·base_z = {x_cos:.3f}  angle={x_angle:.1f}deg  -> {pose}")
     return pose
 
 def _build_frame(ee_z, ee_y):
@@ -58,12 +59,12 @@ def _build_frame(ee_z, ee_y):
 def cross_product(num, obj_pos=None):
     pose = classify_pose(num)
 
-    if pose == "기본자세":
+    if pose == "upright":
         R_ee = _build_frame(num[:, 0], -num[:, 2])
         grasp_pos = obj_pos + num @ DEFAULT_LOCAL_OFFSET if obj_pos is not None else None
         note = None
 
-    elif pose == "뒤집어짐":
+    elif pose == "flipped":
         R_ee = _build_frame(-num[:, 0], -num[:, 1])
         R_top = R_ee
         Rz180 = np.array([[-1.0, 0.0, 0.0],
@@ -84,13 +85,15 @@ def cross_product(num, obj_pos=None):
 
             full_top  = np.append(pos_top, rpy_top)
             full_down = np.append(pos_down, rpy_down)
-            print(f"  candidate[top]  xyzrpy={np.array2string(full_top, precision=3, suppress_small=True, floatmode='fixed')}")
-            print(f"  candidate[down] xyzrpy={np.array2string(full_down, precision=3, suppress_small=True, floatmode='fixed')}")
+            print(f"  candidate[top]  xyzrpy={full_top[0]:.4f} {full_top[1]:.4f} {full_top[2]:.4f} "
+                  f"{full_top[3]:.2f} {full_top[4]:.2f} {full_top[5]:.2f}")
+            print(f"  candidate[down] xyzrpy={full_down[0]:.4f} {full_down[1]:.4f} {full_down[2]:.4f} "
+                  f"{full_down[3]:.2f} {full_down[4]:.2f} {full_down[5]:.2f}")
 
             grasp_pos = pos_top
         else:
             grasp_pos = None
-        note = "뒤집어짐 후보 두 개(top/down) 계산됨 -> 기본값 'top' 반환 (선택 기준 미정)"
+        note = "flipped: two candidates (top/down) computed -> defaulting to 'top' (no selection rule yet)"
 
     else:
         z_cos = np.dot(num[:, 2], BASE_Z)
@@ -105,17 +108,18 @@ def cross_product(num, obj_pos=None):
             offset = SIDE_LOCAL_OFFSET_DOWN
 
         grasp_pos = obj_pos + num @ offset if obj_pos is not None else None
-        note = f"측면 '{label}' 규칙 사용 (obj_z·base_z = {z_cos:.3f})"
+        note = f"side: using '{label}' rule (obj_z·base_z = {z_cos:.3f})"
 
     print(f"R_ee:\n{R_ee}")
 
-    ee_rpy = Rotation.from_matrix(R_ee).as_euler('XYZ', degrees=True)
+    ee_rpy = Rotation.from_matrix(R_ee).as_euler('XYZ', degrees=True)  # intrinsic, same convention as euler_rotation_matrix
     list_pose.append(ee_rpy)
     print(f"ee rpy (deg) = {ee_rpy[0]:.1f} {ee_rpy[1]:.1f} {ee_rpy[2]:.1f}")
 
     if grasp_pos is not None:
         ee_rpy = np.append(grasp_pos, ee_rpy)
-        print(np.array2string(ee_rpy, precision=3, suppress_small=True, floatmode='fixed'))
+        print(f"{ee_rpy[0]:.4f} {ee_rpy[1]:.4f} {ee_rpy[2]:.4f} "
+              f"{ee_rpy[3]:.2f} {ee_rpy[4]:.2f} {ee_rpy[5]:.2f}")
         print(f"grasp position = {grasp_pos[0]:.4f} {grasp_pos[1]:.4f} {grasp_pos[2]:.4f}")
     if note:
         print(note)

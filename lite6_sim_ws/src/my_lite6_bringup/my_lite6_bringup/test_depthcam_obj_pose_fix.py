@@ -35,7 +35,7 @@ from control_msgs.action import FollowJointTrajectory
 from sensor_msgs.msg import Image
 from std_msgs.msg import Float32
 
-MAP_USD         = f"{HOME}/IsaacSim/assets/f2x_lab_v2.usd"
+MAP_USD         = f"{HOME}/IsaacSim/assets/f2x_lab_v3.usd"
 ROBOT_USD       = f"{HOME}/IsaacSim/assets/uf_lite6.usd"
 ROBOT_PRIM_PATH = "/World/Robot/UF_ROBOT"
 
@@ -109,14 +109,37 @@ class RobotBridge(Node):
             goal_handle.abort()
             return FollowJointTrajectory.Result(error_code=FollowJointTrajectory.Result.INVALID_GOAL)
 
+        feedback = FollowJointTrajectory.Feedback()
+        feedback.joint_names = JOINT_NAMES
+
+        # Step through the intermediate waypoints so the sim retraces the
+        # planned path shape instead of jumping straight to the goal, but
+        # without a per-point lock/feedback/sleep loop — that busy-waited on
+        # 0.02 rad convergence for every single waypoint (a MoveIt cartesian
+        # trajectory can carry hundreds), which pegged the ROS executor
+        # thread against the GIL and starved the render loop, causing the
+        # frame drops. Instead we just pace target updates by the
+        # trajectory's own time_from_start and only block-wait on the final
+        # point, same as the original single-target behavior.
+        prev_t = 0.0
+        for point in traj.points[:-1]:
+            if goal_handle.is_cancel_requested:
+                goal_handle.canceled()
+                return FollowJointTrajectory.Result()
+            with self._lock:
+                for name, pos in zip(traj.joint_names, point.positions):
+                    if name in self._idx_map:
+                        self._targets[self._idx_map[name]] = float(pos)
+            t = point.time_from_start.sec + point.time_from_start.nanosec * 1e-9
+            time.sleep(max(0.0, min(t - prev_t, 0.5)))
+            prev_t = t
+
         with self._lock:
             for name, pos in zip(traj.joint_names, traj.points[-1].positions):
                 if name in self._idx_map:
                     self._targets[self._idx_map[name]] = float(pos)
             target = list(self._targets)
 
-        feedback = FollowJointTrajectory.Feedback()
-        feedback.joint_names = JOINT_NAMES
         deadline = time.monotonic() + 30.0
         while time.monotonic() < deadline:
             if goal_handle.is_cancel_requested:

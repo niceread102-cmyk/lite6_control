@@ -1,3 +1,0 @@
-[console_scripts]
-lite6_sim_bringup = my_lite6_bringup.lite6_sim_bringup:main
-newton_test = my_lite6_bringup.newton_test:main

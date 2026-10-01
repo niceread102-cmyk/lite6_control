@@ -1,0 +1,12 @@
+# Real Lite6 cell: config/default.yaml plus what differs on the real robot. Default config of
+# sequence_real_action (the other nodes use default.yaml; pass --config .../real.yaml to use this one).
+defaults: [default]
+
+robot:
+  poses:
+    goal: [-pi/2, pi/2, pi, 0.0, pi/2, -pi/2]   # drop pose of the real cell
+
+sequence:
+  move_time_s:
+    goal: 8.0
+  drop_wait_s: 1.0

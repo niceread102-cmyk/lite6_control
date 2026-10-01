@@ -1,0 +1,51 @@
+[0.504s] Invoking command in '/home/v/lite6_ws/src/my_lite6_control': DEBUGINFOD_URLS=https://debuginfod.ubuntu.com PYTHONPATH=/home/v/lite6_ws/build/my_lite6_control/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/v/lite6_ws/install/my_lite6_control/lib/python3.12/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py egg_info --egg-base ../../build/my_lite6_control build --build-base /home/v/lite6_ws/build/my_lite6_control/build install --record /home/v/lite6_ws/build/my_lite6_control/install.log --install-scripts $base/lib/my_lite6_control --single-version-externally-managed install_data
+[0.669s] running egg_info
+[0.677s] writing ../../build/my_lite6_control/my_lite6_control.egg-info/PKG-INFO
+[0.678s] writing dependency_links to ../../build/my_lite6_control/my_lite6_control.egg-info/dependency_links.txt
+[0.678s] writing entry points to ../../build/my_lite6_control/my_lite6_control.egg-info/entry_points.txt
+[0.678s] writing requirements to ../../build/my_lite6_control/my_lite6_control.egg-info/requires.txt
+[0.678s] writing top-level names to ../../build/my_lite6_control/my_lite6_control.egg-info/top_level.txt
+[0.699s] reading manifest file '../../build/my_lite6_control/my_lite6_control.egg-info/SOURCES.txt'
+[0.700s] writing manifest file '../../build/my_lite6_control/my_lite6_control.egg-info/SOURCES.txt'
+[0.700s] running build
+[0.700s] running build_py
+[0.700s] copying my_lite6_control/matrix_calculator_auto.py -> /home/v/lite6_ws/build/my_lite6_control/build/lib/my_lite6_control
+[0.700s] copying my_lite6_control/moveit2_test.py -> /home/v/lite6_ws/build/my_lite6_control/build/lib/my_lite6_control
+[0.700s] copying my_lite6_control/matrix_calculator_fix.py -> /home/v/lite6_ws/build/my_lite6_control/build/lib/my_lite6_control
+[0.701s] copying my_lite6_control/tcp_calibration.py -> /home/v/lite6_ws/build/my_lite6_control/build/lib/my_lite6_control
+[0.701s] running install
+[0.704s] running install_lib
+[0.714s] copying /home/v/lite6_ws/build/my_lite6_control/build/lib/my_lite6_control/matrix_calculator_auto.py -> /home/v/lite6_ws/install/my_lite6_control/lib/python3.12/site-packages/my_lite6_control
+[0.715s] copying /home/v/lite6_ws/build/my_lite6_control/build/lib/my_lite6_control/moveit2_test.py -> /home/v/lite6_ws/install/my_lite6_control/lib/python3.12/site-packages/my_lite6_control
+[0.715s] copying /home/v/lite6_ws/build/my_lite6_control/build/lib/my_lite6_control/matrix_calculator_fix.py -> /home/v/lite6_ws/install/my_lite6_control/lib/python3.12/site-packages/my_lite6_control
+[0.715s] copying /home/v/lite6_ws/build/my_lite6_control/build/lib/my_lite6_control/tcp_calibration.py -> /home/v/lite6_ws/install/my_lite6_control/lib/python3.12/site-packages/my_lite6_control
+[0.716s] byte-compiling /home/v/lite6_ws/install/my_lite6_control/lib/python3.12/site-packages/my_lite6_control/matrix_calculator_auto.py to matrix_calculator_auto.cpython-312.pyc
+[0.717s] byte-compiling /home/v/lite6_ws/install/my_lite6_control/lib/python3.12/site-packages/my_lite6_control/moveit2_test.py to moveit2_test.cpython-312.pyc
+[0.718s] byte-compiling /home/v/lite6_ws/install/my_lite6_control/lib/python3.12/site-packages/my_lite6_control/matrix_calculator_fix.py to matrix_calculator_fix.cpython-312.pyc
+[0.719s] byte-compiling /home/v/lite6_ws/install/my_lite6_control/lib/python3.12/site-packages/my_lite6_control/tcp_calibration.py to tcp_calibration.cpython-312.pyc
+[0.720s] running install_data
+[0.720s] running install_egg_info
+[0.732s] removing '/home/v/lite6_ws/install/my_lite6_control/lib/python3.12/site-packages/my_lite6_control-0.0.0-py3.12.egg-info' (and everything under it)
+[0.732s] Copying ../../build/my_lite6_control/my_lite6_control.egg-info to /home/v/lite6_ws/install/my_lite6_control/lib/python3.12/site-packages/my_lite6_control-0.0.0-py3.12.egg-info
+[0.732s] running install_scripts
+[0.825s] Installing auto_pick_loop script to /home/v/lite6_ws/install/my_lite6_control/lib/my_lite6_control
+[0.825s] Installing ik_node_moveit script to /home/v/lite6_ws/install/my_lite6_control/lib/my_lite6_control
+[0.826s] Installing ik_node_twist script to /home/v/lite6_ws/install/my_lite6_control/lib/my_lite6_control
+[0.826s] Installing ik_node_ur5e script to /home/v/lite6_ws/install/my_lite6_control/lib/my_lite6_control
+[0.826s] Installing joint4 script to /home/v/lite6_ws/install/my_lite6_control/lib/my_lite6_control
+[0.826s] Installing joint6 script to /home/v/lite6_ws/install/my_lite6_control/lib/my_lite6_control
+[0.826s] Installing moveit2 script to /home/v/lite6_ws/install/my_lite6_control/lib/my_lite6_control
+[0.826s] Installing moveit2_action script to /home/v/lite6_ws/install/my_lite6_control/lib/my_lite6_control
+[0.826s] Installing moveit2_cartesian script to /home/v/lite6_ws/install/my_lite6_control/lib/my_lite6_control
+[0.826s] Installing moveit2_servo script to /home/v/lite6_ws/install/my_lite6_control/lib/my_lite6_control
+[0.826s] Installing moveit2_test script to /home/v/lite6_ws/install/my_lite6_control/lib/my_lite6_control
+[0.827s] Installing sequence script to /home/v/lite6_ws/install/my_lite6_control/lib/my_lite6_control
+[0.827s] Installing sequence_real script to /home/v/lite6_ws/install/my_lite6_control/lib/my_lite6_control
+[0.827s] Installing sequence_real_action script to /home/v/lite6_ws/install/my_lite6_control/lib/my_lite6_control
+[0.827s] Installing sequence_sim script to /home/v/lite6_ws/install/my_lite6_control/lib/my_lite6_control
+[0.827s] Installing sequence_sim_action script to /home/v/lite6_ws/install/my_lite6_control/lib/my_lite6_control
+[0.827s] Installing sequence_sim_custom_ik script to /home/v/lite6_ws/install/my_lite6_control/lib/my_lite6_control
+[0.827s] Installing simple_detection script to /home/v/lite6_ws/install/my_lite6_control/lib/my_lite6_control
+[0.827s] Installing target_6d_auto_real script to /home/v/lite6_ws/install/my_lite6_control/lib/my_lite6_control
+[0.827s] writing list of installed files to '/home/v/lite6_ws/build/my_lite6_control/install.log'
+[0.861s] Invoked command in '/home/v/lite6_ws/src/my_lite6_control' returned '0': DEBUGINFOD_URLS=https://debuginfod.ubuntu.com PYTHONPATH=/home/v/lite6_ws/build/my_lite6_control/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/v/lite6_ws/install/my_lite6_control/lib/python3.12/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py egg_info --egg-base ../../build/my_lite6_control build --build-base /home/v/lite6_ws/build/my_lite6_control/build install --record /home/v/lite6_ws/build/my_lite6_control/install.log --install-scripts $base/lib/my_lite6_control --single-version-externally-managed install_data

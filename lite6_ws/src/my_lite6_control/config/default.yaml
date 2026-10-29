@@ -14,8 +14,10 @@ planning:                       # every planned move: TCP pose -> compute_ik (se
   pipeline_id: ''               # '' = move_group's default planning pipeline (ompl)
   planning_time_s: 5.0          # allowed_planning_time
   planning_attempts: 10         # num_planning_attempts
-  velocity_scaling: 0.15        # x MoveIt's joint velocity limits - single-target nodes (moveit2, moveit2_action,
-  acceleration_scaling: 0.05    # moveit2_test); the pick sequence has its own under `sequence`
+  velocity_scaling: 0.3        # x MoveIt's joint velocity limits - single-target nodes (moveit2, moveit2_action,
+  acceleration_scaling: 0.1    # moveit2_test); the pick sequence has its own under `sequence`
+  #velocity_scaling: 0.15        # x MoveIt's joint velocity limits - single-target nodes (moveit2, moveit2_action,
+  #acceleration_scaling: 0.05    # moveit2_test); the pick sequence has its own under `sequence`
   goal_joint_tolerance_rad: 0.0005  # joint goal = IK solution +- this; tight = the plan lands on the same spot every time
   enforce_joint_limits: true    # robot.joint_limits: IK solutions and every planned state must stay inside (IK and path
                                 # constraints), trajectories are checked and slowed to the velocity/acceleration limits,
@@ -27,7 +29,8 @@ planning:                       # every planned move: TCP pose -> compute_ik (se
 safety:                         # sequence nodes reject a /target_pose (TCP in link_base) outside this box or reach.
   workspace_x_m: [0.05, 0.45]   # The box is also sent as MotionPlanRequest.workspace_parameters (MoveIt applies that
   workspace_y_m: [-0.45, 0.45]  # to floating/planar joints only - it does not bound the arm's path)
-  workspace_z_m: [0.01, 0.60]
+  workspace_z_m: [0.005, 0.60]
+  #workspace_z_m: [0.001, 0.60]
   max_reach_m: 0.44             # |TCP position| from the base origin
 
 moveit2:                        # single-target nodes: /target_pose -> IK -> plan -> execute -> /ik_done
@@ -35,9 +38,21 @@ moveit2:                        # single-target nodes: /target_pose -> IK -> pla
   dedup_angle_deg: 0.5          # re-solving IK from the live joint state gives a slightly different solution = TCP twitch
   exec_margin_s: 0.5            # moveit2_test: /ik_done this long after the published trajectory's end
 
+move_to:                        # move_to: "[frame] x y z [rpy | quat]" in any TF frame -> /target_pose (TCP in robot.base_frame)
+  frame: base                   # frame of a line without one: an alias below or any TF frame name
+  frames:                       # aliases for the first word of an input line
+    base: link_base
+    cam: camera_color_optical_frame   # wrist RealSense colour optical frame (z forward, x right, y down)
+    tcp: link_tcp               # URDF joint_tcp: keep it equal to robot.tcp_offset_m
+    eef: link_eef
+  xyz_orientation: down         # x y z only: down = tool straight down in the base frame | current = keep the TCP orientation
+  tf_timeout_s: 1.0
+
 sequence:                       # pick-and-place state machine (sequence_sim_action(_fix), sequence_real_action, auto_pick_loop_sim)
-  velocity_scaling: 0.06        # planned moves of the pick cycle (pre-grasp, dive, lift)
-  acceleration_scaling: 0.02
+  velocity_scaling: 0.3        # planned moves of the pick cycle (pre-grasp, dive, lift)3
+  acceleration_scaling: 0.1
+  #velocity_scaling: 0.06        # planned moves of the pick cycle (pre-grasp, dive, lift)
+  #acceleration_scaling: 0.02
   approach_dist_m: 0.04         # pre-grasp = grasp pose backed off this far along the tool z axis
   descend_dist_m: 0.04          # dive from pre-grasp along the tool z axis (= approach_dist_m: down to the grasp pose)
   move_time_s:                  # fixed joint moves to robot.poses (lengthened if a joint would exceed its max velocity)
@@ -56,6 +71,8 @@ sequence:                       # pick-and-place state machine (sequence_sim_act
 
 ros:
   target_pose_topic: /target_pose
+  home_request_topic: /go_home  # std_msgs/Empty -> sequence_real_action: idle = home; approach / dive = abort, back out
+                                # and home; after the grasp = place the part first (the cycle ends at home)
   joint_states_topic: /joint_states
   done_topic: /ik_done          # Bool after every target (moveit2, moveit2_action, moveit2_test)
   compute_ik_service: /compute_ik

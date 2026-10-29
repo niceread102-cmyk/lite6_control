@@ -8,7 +8,12 @@ robot:
   group: lite6                  # MoveIt planning group
   base_frame: link_base         # frame of /target_pose and of the safety box
   eef_link: link_eef            # IK link (flange)
-  tcp_offset_m: 0.0836          # TCP = eef_link + this along its z axis (between the gripper fingers)
+  #tcp_offset_m: 0.0836          # TCP = eef_link + this, in the eef_link frame (between the gripper fingers):
+                                # a number = along z only, or [x, y, z] (e.g. [0.0, 0.0, 0.0836])
+  #tcp_offset_m: [0.0, 0.0, 0.0836]  # 새 방식: link_eef 좌표계 기준 [x, y, z] (m)
+  #tcp_offset_m: [0.0, 0.0, 0.13]
+  #tcp_offset_m: [0.0, 0.0, 0.106]  # 실측 툴 끝 (cam2robot touch 캘리브레이션 RMS 최소, 2026-10-27)
+  tcp_offset_m: [0.0, 0.0, 0.101]  # 새 방식: link_eef 좌표계 기준 [x, y, z] (m). 실측 툴 끝 0.106 - 5 mm: 목표보다 5 mm 더 깊게 잡음
   joint_names: [joint1, joint2, joint3, joint4, joint5, joint6]
   joint_limits:                 # position_deg: [min, max]
                                 # max_velocity_deg_s / max_acceleration_deg_s2: null = MoveIt's joint_limits.yaml

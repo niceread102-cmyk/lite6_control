@@ -1,0 +1,69 @@
+[0.938s] Invoking command in '/home/joon/Projects/lite6_control/git/lite6_ws/src/my_lite6_control': PYTHONPATH=/home/joon/Projects/lite6_control/git/lite6_ws/build/my_lite6_control/prefix_override:/home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/python3.12/site-packages:${PYTHONPATH} /usr/bin/python3 setup.py egg_info --egg-base ../../build/my_lite6_control build --build-base /home/joon/Projects/lite6_control/git/lite6_ws/build/my_lite6_control/build install --record /home/joon/Projects/lite6_control/git/lite6_ws/build/my_lite6_control/install.log --single-version-externally-managed
+[1.155s] running egg_info
+[1.170s] writing ../../build/my_lite6_control/my_lite6_control.egg-info/PKG-INFO
+[1.171s] writing dependency_links to ../../build/my_lite6_control/my_lite6_control.egg-info/dependency_links.txt
+[1.171s] writing entry points to ../../build/my_lite6_control/my_lite6_control.egg-info/entry_points.txt
+[1.171s] writing requirements to ../../build/my_lite6_control/my_lite6_control.egg-info/requires.txt
+[1.171s] writing top-level names to ../../build/my_lite6_control/my_lite6_control.egg-info/top_level.txt
+[1.273s] reading manifest file '../../build/my_lite6_control/my_lite6_control.egg-info/SOURCES.txt'
+[1.274s] writing manifest file '../../build/my_lite6_control/my_lite6_control.egg-info/SOURCES.txt'
+[1.275s] running build
+[1.275s] running build_py
+[1.275s] copying my_lite6_control/move_to.py -> /home/joon/Projects/lite6_control/git/lite6_ws/build/my_lite6_control/build/lib/my_lite6_control
+[1.275s] copying my_lite6_control/motion.py -> /home/joon/Projects/lite6_control/git/lite6_ws/build/my_lite6_control/build/lib/my_lite6_control
+[1.276s] copying my_lite6_control/config.py -> /home/joon/Projects/lite6_control/git/lite6_ws/build/my_lite6_control/build/lib/my_lite6_control
+[1.276s] running install
+[1.276s] /usr/lib/python3/dist-packages/setuptools/_distutils/cmd.py:66: SetuptoolsDeprecationWarning: setup.py install is deprecated.
+[1.277s] !!
+[1.277s] 
+[1.277s]         ********************************************************************************
+[1.277s]         Please avoid running ``setup.py`` directly.
+[1.277s]         Instead, use pypa/build, pypa/installer or other
+[1.277s]         standards-based tools.
+[1.277s] 
+[1.277s]         See https://blog.ganssle.io/articles/2021/10/setup-py-deprecated.html for details.
+[1.277s]         ********************************************************************************
+[1.277s] 
+[1.277s] !!
+[1.277s]   self.initialize_options()
+[1.280s] running install_lib
+[1.297s] copying /home/joon/Projects/lite6_control/git/lite6_ws/build/my_lite6_control/build/lib/my_lite6_control/move_to.py -> /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/python3.12/site-packages/my_lite6_control
+[1.298s] copying /home/joon/Projects/lite6_control/git/lite6_ws/build/my_lite6_control/build/lib/my_lite6_control/motion.py -> /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/python3.12/site-packages/my_lite6_control
+[1.298s] copying /home/joon/Projects/lite6_control/git/lite6_ws/build/my_lite6_control/build/lib/my_lite6_control/config.py -> /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/python3.12/site-packages/my_lite6_control
+[1.299s] byte-compiling /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/python3.12/site-packages/my_lite6_control/move_to.py to move_to.cpython-312.pyc
+[1.299s] byte-compiling /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/python3.12/site-packages/my_lite6_control/motion.py to motion.cpython-312.pyc
+[1.301s] byte-compiling /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/python3.12/site-packages/my_lite6_control/config.py to config.cpython-312.pyc
+[1.305s] running install_data
+[1.322s] copying config/default.yaml -> /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/share/my_lite6_control/config
+[1.322s] copying config/robots/lite6.yaml -> /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/share/my_lite6_control/config/robots
+[1.322s] running install_egg_info
+[1.343s] removing '/home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/python3.12/site-packages/my_lite6_control-0.0.0-py3.12.egg-info' (and everything under it)
+[1.343s] Copying ../../build/my_lite6_control/my_lite6_control.egg-info to /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/python3.12/site-packages/my_lite6_control-0.0.0-py3.12.egg-info
+[1.344s] running install_scripts
+[1.404s] Installing auto_pick_loop script to /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/my_lite6_control
+[1.404s] Installing auto_pick_loop_sim script to /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/my_lite6_control
+[1.404s] Installing custom_ik script to /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/my_lite6_control
+[1.404s] Installing custom_ik_rotation script to /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/my_lite6_control
+[1.404s] Installing ik_node_moveit script to /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/my_lite6_control
+[1.404s] Installing ik_node_twist script to /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/my_lite6_control
+[1.404s] Installing ik_node_ur5e script to /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/my_lite6_control
+[1.405s] Installing joint4 script to /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/my_lite6_control
+[1.405s] Installing joint6 script to /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/my_lite6_control
+[1.405s] Installing move_to script to /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/my_lite6_control
+[1.405s] Installing moveit2 script to /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/my_lite6_control
+[1.405s] Installing moveit2_action script to /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/my_lite6_control
+[1.405s] Installing moveit2_cartesian script to /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/my_lite6_control
+[1.405s] Installing moveit2_servo script to /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/my_lite6_control
+[1.405s] Installing moveit2_test script to /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/my_lite6_control
+[1.405s] Installing sequence script to /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/my_lite6_control
+[1.405s] Installing sequence_real script to /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/my_lite6_control
+[1.405s] Installing sequence_real_action script to /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/my_lite6_control
+[1.406s] Installing sequence_sim script to /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/my_lite6_control
+[1.406s] Installing sequence_sim_action script to /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/my_lite6_control
+[1.406s] Installing sequence_sim_action_fix script to /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/my_lite6_control
+[1.406s] Installing sequence_sim_custom_ik script to /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/my_lite6_control
+[1.406s] Installing simple_detection script to /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/my_lite6_control
+[1.406s] Installing target_6d_auto_real script to /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/my_lite6_control
+[1.406s] Installing view_joint script to /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/my_lite6_control
+[1.406s] writing list of installed files to '/home/joon/Projects/lite6_control/git/lite6_ws/build/my_lite6_control/install.log'
+[1.447s] Invoked command in '/home/joon/Projects/lite6_control/git/lite6_ws/src/my_lite6_control' returned '0': PYTHONPATH=/home/joon/Projects/lite6_control/git/lite6_ws/build/my_lite6_control/prefix_override:/home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/python3.12/site-packages:${PYTHONPATH} /usr/bin/python3 setup.py egg_info --egg-base ../../build/my_lite6_control build --build-base /home/joon/Projects/lite6_control/git/lite6_ws/build/my_lite6_control/build install --record /home/joon/Projects/lite6_control/git/lite6_ws/build/my_lite6_control/install.log --single-version-externally-managed

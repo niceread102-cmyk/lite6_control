@@ -360,6 +360,10 @@ def validate(cfg: Cfg, errs: list | None = None):
     if errs:
         raise ValueError("invalid config:\n  - " + "\n  - ".join(errs))
 
+    tcp = cfg.robot.tcp_offset_m
+    if not (_is_num(tcp) or (isinstance(tcp, (list, tuple)) and len(tcp) == 3 and all(_is_num(x) for x in tcp))):
+        errs.append(f"robot.tcp_offset_m must be a number (z) or [x, y, z], got {tcp!r}")
+
     names = cfg.robot.joint_names
     if not (isinstance(names, list) and names and all(isinstance(n, str) for n in names)):
         errs.append(f"robot.joint_names must be a non-empty list of joint names, got {names!r}")

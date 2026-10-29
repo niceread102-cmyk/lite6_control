@@ -1,0 +1,187 @@
+[0.569s] Invoking command in '/home/joon/Projects/lite6_control/git/lite6_ws/src/my_lite6_control': PYTHONPATH=/home/joon/Projects/lite6_control/git/lite6_ws/build/my_lite6_control/prefix_override:/home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/python3.12/site-packages:${PYTHONPATH} /usr/bin/python3 setup.py egg_info --egg-base ../../build/my_lite6_control build --build-base /home/joon/Projects/lite6_control/git/lite6_ws/build/my_lite6_control/build install --record /home/joon/Projects/lite6_control/git/lite6_ws/build/my_lite6_control/install.log --single-version-externally-managed
+[0.696s] running egg_info
+[0.696s] creating ../../build/my_lite6_control/my_lite6_control.egg-info
+[0.705s] writing ../../build/my_lite6_control/my_lite6_control.egg-info/PKG-INFO
+[0.705s] writing dependency_links to ../../build/my_lite6_control/my_lite6_control.egg-info/dependency_links.txt
+[0.705s] writing entry points to ../../build/my_lite6_control/my_lite6_control.egg-info/entry_points.txt
+[0.705s] writing requirements to ../../build/my_lite6_control/my_lite6_control.egg-info/requires.txt
+[0.705s] writing top-level names to ../../build/my_lite6_control/my_lite6_control.egg-info/top_level.txt
+[0.748s] writing manifest file '../../build/my_lite6_control/my_lite6_control.egg-info/SOURCES.txt'
+[0.771s] reading manifest file '../../build/my_lite6_control/my_lite6_control.egg-info/SOURCES.txt'
+[0.771s] writing manifest file '../../build/my_lite6_control/my_lite6_control.egg-info/SOURCES.txt'
+[0.771s] running build
+[0.771s] running build_py
+[0.771s] creating /home/joon/Projects/lite6_control/git/lite6_ws/build/my_lite6_control/build
+[0.772s] creating /home/joon/Projects/lite6_control/git/lite6_ws/build/my_lite6_control/build/lib
+[0.772s] creating /home/joon/Projects/lite6_control/git/lite6_ws/build/my_lite6_control/build/lib/my_lite6_control
+[0.772s] copying my_lite6_control/matrix_calculator.py -> /home/joon/Projects/lite6_control/git/lite6_ws/build/my_lite6_control/build/lib/my_lite6_control
+[0.772s] copying my_lite6_control/matrix_calculator_auto.py -> /home/joon/Projects/lite6_control/git/lite6_ws/build/my_lite6_control/build/lib/my_lite6_control
+[0.772s] copying my_lite6_control/auto_pick_loop.py -> /home/joon/Projects/lite6_control/git/lite6_ws/build/my_lite6_control/build/lib/my_lite6_control
+[0.772s] copying my_lite6_control/ik_node_moveit_sim.py -> /home/joon/Projects/lite6_control/git/lite6_ws/build/my_lite6_control/build/lib/my_lite6_control
+[0.772s] copying my_lite6_control/moveit2_action.py -> /home/joon/Projects/lite6_control/git/lite6_ws/build/my_lite6_control/build/lib/my_lite6_control
+[0.772s] copying my_lite6_control/sequence_sim_custom_ik.py -> /home/joon/Projects/lite6_control/git/lite6_ws/build/my_lite6_control/build/lib/my_lite6_control
+[0.772s] copying my_lite6_control/moveit2_test.py -> /home/joon/Projects/lite6_control/git/lite6_ws/build/my_lite6_control/build/lib/my_lite6_control
+[0.772s] copying my_lite6_control/matrix_calculator_fix.py -> /home/joon/Projects/lite6_control/git/lite6_ws/build/my_lite6_control/build/lib/my_lite6_control
+[0.772s] copying my_lite6_control/sequence_real_action.py -> /home/joon/Projects/lite6_control/git/lite6_ws/build/my_lite6_control/build/lib/my_lite6_control
+[0.772s] copying my_lite6_control/ik_node_ur5e.py -> /home/joon/Projects/lite6_control/git/lite6_ws/build/my_lite6_control/build/lib/my_lite6_control
+[0.772s] copying my_lite6_control/sequence_sim_action.py -> /home/joon/Projects/lite6_control/git/lite6_ws/build/my_lite6_control/build/lib/my_lite6_control
+[0.772s] copying my_lite6_control/custom_ik.py -> /home/joon/Projects/lite6_control/git/lite6_ws/build/my_lite6_control/build/lib/my_lite6_control
+[0.772s] copying my_lite6_control/custom_ik_test.py -> /home/joon/Projects/lite6_control/git/lite6_ws/build/my_lite6_control/build/lib/my_lite6_control
+[0.772s] copying my_lite6_control/motion.py -> /home/joon/Projects/lite6_control/git/lite6_ws/build/my_lite6_control/build/lib/my_lite6_control
+[0.772s] copying my_lite6_control/sequence_sim_action_fix.py -> /home/joon/Projects/lite6_control/git/lite6_ws/build/my_lite6_control/build/lib/my_lite6_control
+[0.772s] copying my_lite6_control/moveit2_cartesian.py -> /home/joon/Projects/lite6_control/git/lite6_ws/build/my_lite6_control/build/lib/my_lite6_control
+[0.772s] copying my_lite6_control/joint6.py -> /home/joon/Projects/lite6_control/git/lite6_ws/build/my_lite6_control/build/lib/my_lite6_control
+[0.772s] copying my_lite6_control/sequence.py -> /home/joon/Projects/lite6_control/git/lite6_ws/build/my_lite6_control/build/lib/my_lite6_control
+[0.772s] copying my_lite6_control/ee_6d.py -> /home/joon/Projects/lite6_control/git/lite6_ws/build/my_lite6_control/build/lib/my_lite6_control
+[0.772s] copying my_lite6_control/moveit2_servo.py -> /home/joon/Projects/lite6_control/git/lite6_ws/build/my_lite6_control/build/lib/my_lite6_control
+[0.772s] copying my_lite6_control/sequence_real.py -> /home/joon/Projects/lite6_control/git/lite6_ws/build/my_lite6_control/build/lib/my_lite6_control
+[0.772s] copying my_lite6_control/custom_ik_rotation_ur5e.py -> /home/joon/Projects/lite6_control/git/lite6_ws/build/my_lite6_control/build/lib/my_lite6_control
+[0.772s] copying my_lite6_control/auto_pick_loop_sim.py -> /home/joon/Projects/lite6_control/git/lite6_ws/build/my_lite6_control/build/lib/my_lite6_control
+[0.772s] copying my_lite6_control/target_6d_auto_real.py -> /home/joon/Projects/lite6_control/git/lite6_ws/build/my_lite6_control/build/lib/my_lite6_control
+[0.773s] copying my_lite6_control/ik_node_moveit.py -> /home/joon/Projects/lite6_control/git/lite6_ws/build/my_lite6_control/build/lib/my_lite6_control
+[0.773s] copying my_lite6_control/tcp_calibration.py -> /home/joon/Projects/lite6_control/git/lite6_ws/build/my_lite6_control/build/lib/my_lite6_control
+[0.773s] copying my_lite6_control/view_joint.py -> /home/joon/Projects/lite6_control/git/lite6_ws/build/my_lite6_control/build/lib/my_lite6_control
+[0.773s] copying my_lite6_control/simple_detection.py -> /home/joon/Projects/lite6_control/git/lite6_ws/build/my_lite6_control/build/lib/my_lite6_control
+[0.773s] copying my_lite6_control/custom_ik_rotation.py -> /home/joon/Projects/lite6_control/git/lite6_ws/build/my_lite6_control/build/lib/my_lite6_control
+[0.773s] copying my_lite6_control/custom_ik_control.py -> /home/joon/Projects/lite6_control/git/lite6_ws/build/my_lite6_control/build/lib/my_lite6_control
+[0.773s] copying my_lite6_control/sequence_sim.py -> /home/joon/Projects/lite6_control/git/lite6_ws/build/my_lite6_control/build/lib/my_lite6_control
+[0.773s] copying my_lite6_control/moveit2.py -> /home/joon/Projects/lite6_control/git/lite6_ws/build/my_lite6_control/build/lib/my_lite6_control
+[0.773s] copying my_lite6_control/joint4.py -> /home/joon/Projects/lite6_control/git/lite6_ws/build/my_lite6_control/build/lib/my_lite6_control
+[0.773s] copying my_lite6_control/__init__.py -> /home/joon/Projects/lite6_control/git/lite6_ws/build/my_lite6_control/build/lib/my_lite6_control
+[0.773s] copying my_lite6_control/ik_node_moveit_sim_ptp.py -> /home/joon/Projects/lite6_control/git/lite6_ws/build/my_lite6_control/build/lib/my_lite6_control
+[0.773s] copying my_lite6_control/ik_node_twist.py -> /home/joon/Projects/lite6_control/git/lite6_ws/build/my_lite6_control/build/lib/my_lite6_control
+[0.773s] copying my_lite6_control/config.py -> /home/joon/Projects/lite6_control/git/lite6_ws/build/my_lite6_control/build/lib/my_lite6_control
+[0.773s] running install
+[0.773s] /usr/lib/python3/dist-packages/setuptools/_distutils/cmd.py:66: SetuptoolsDeprecationWarning: setup.py install is deprecated.
+[0.773s] !!
+[0.773s] 
+[0.773s]         ********************************************************************************
+[0.773s]         Please avoid running ``setup.py`` directly.
+[0.773s]         Instead, use pypa/build, pypa/installer or other
+[0.773s]         standards-based tools.
+[0.773s] 
+[0.773s]         See https://blog.ganssle.io/articles/2021/10/setup-py-deprecated.html for details.
+[0.773s]         ********************************************************************************
+[0.773s] 
+[0.773s] !!
+[0.773s]   self.initialize_options()
+[0.775s] running install_lib
+[0.787s] creating /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/python3.12/site-packages/my_lite6_control
+[0.787s] copying /home/joon/Projects/lite6_control/git/lite6_ws/build/my_lite6_control/build/lib/my_lite6_control/matrix_calculator.py -> /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/python3.12/site-packages/my_lite6_control
+[0.787s] copying /home/joon/Projects/lite6_control/git/lite6_ws/build/my_lite6_control/build/lib/my_lite6_control/matrix_calculator_auto.py -> /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/python3.12/site-packages/my_lite6_control
+[0.787s] copying /home/joon/Projects/lite6_control/git/lite6_ws/build/my_lite6_control/build/lib/my_lite6_control/auto_pick_loop.py -> /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/python3.12/site-packages/my_lite6_control
+[0.787s] copying /home/joon/Projects/lite6_control/git/lite6_ws/build/my_lite6_control/build/lib/my_lite6_control/ik_node_moveit_sim.py -> /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/python3.12/site-packages/my_lite6_control
+[0.787s] copying /home/joon/Projects/lite6_control/git/lite6_ws/build/my_lite6_control/build/lib/my_lite6_control/moveit2_action.py -> /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/python3.12/site-packages/my_lite6_control
+[0.787s] copying /home/joon/Projects/lite6_control/git/lite6_ws/build/my_lite6_control/build/lib/my_lite6_control/sequence_sim_custom_ik.py -> /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/python3.12/site-packages/my_lite6_control
+[0.787s] copying /home/joon/Projects/lite6_control/git/lite6_ws/build/my_lite6_control/build/lib/my_lite6_control/moveit2_test.py -> /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/python3.12/site-packages/my_lite6_control
+[0.787s] copying /home/joon/Projects/lite6_control/git/lite6_ws/build/my_lite6_control/build/lib/my_lite6_control/matrix_calculator_fix.py -> /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/python3.12/site-packages/my_lite6_control
+[0.787s] copying /home/joon/Projects/lite6_control/git/lite6_ws/build/my_lite6_control/build/lib/my_lite6_control/sequence_real_action.py -> /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/python3.12/site-packages/my_lite6_control
+[0.787s] copying /home/joon/Projects/lite6_control/git/lite6_ws/build/my_lite6_control/build/lib/my_lite6_control/ik_node_ur5e.py -> /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/python3.12/site-packages/my_lite6_control
+[0.787s] copying /home/joon/Projects/lite6_control/git/lite6_ws/build/my_lite6_control/build/lib/my_lite6_control/sequence_sim_action.py -> /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/python3.12/site-packages/my_lite6_control
+[0.787s] copying /home/joon/Projects/lite6_control/git/lite6_ws/build/my_lite6_control/build/lib/my_lite6_control/custom_ik.py -> /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/python3.12/site-packages/my_lite6_control
+[0.787s] copying /home/joon/Projects/lite6_control/git/lite6_ws/build/my_lite6_control/build/lib/my_lite6_control/custom_ik_test.py -> /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/python3.12/site-packages/my_lite6_control
+[0.787s] copying /home/joon/Projects/lite6_control/git/lite6_ws/build/my_lite6_control/build/lib/my_lite6_control/motion.py -> /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/python3.12/site-packages/my_lite6_control
+[0.787s] copying /home/joon/Projects/lite6_control/git/lite6_ws/build/my_lite6_control/build/lib/my_lite6_control/sequence_sim_action_fix.py -> /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/python3.12/site-packages/my_lite6_control
+[0.787s] copying /home/joon/Projects/lite6_control/git/lite6_ws/build/my_lite6_control/build/lib/my_lite6_control/moveit2_cartesian.py -> /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/python3.12/site-packages/my_lite6_control
+[0.787s] copying /home/joon/Projects/lite6_control/git/lite6_ws/build/my_lite6_control/build/lib/my_lite6_control/joint6.py -> /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/python3.12/site-packages/my_lite6_control
+[0.787s] copying /home/joon/Projects/lite6_control/git/lite6_ws/build/my_lite6_control/build/lib/my_lite6_control/sequence.py -> /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/python3.12/site-packages/my_lite6_control
+[0.787s] copying /home/joon/Projects/lite6_control/git/lite6_ws/build/my_lite6_control/build/lib/my_lite6_control/ee_6d.py -> /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/python3.12/site-packages/my_lite6_control
+[0.787s] copying /home/joon/Projects/lite6_control/git/lite6_ws/build/my_lite6_control/build/lib/my_lite6_control/moveit2_servo.py -> /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/python3.12/site-packages/my_lite6_control
+[0.787s] copying /home/joon/Projects/lite6_control/git/lite6_ws/build/my_lite6_control/build/lib/my_lite6_control/sequence_real.py -> /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/python3.12/site-packages/my_lite6_control
+[0.787s] copying /home/joon/Projects/lite6_control/git/lite6_ws/build/my_lite6_control/build/lib/my_lite6_control/custom_ik_rotation_ur5e.py -> /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/python3.12/site-packages/my_lite6_control
+[0.787s] copying /home/joon/Projects/lite6_control/git/lite6_ws/build/my_lite6_control/build/lib/my_lite6_control/auto_pick_loop_sim.py -> /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/python3.12/site-packages/my_lite6_control
+[0.787s] copying /home/joon/Projects/lite6_control/git/lite6_ws/build/my_lite6_control/build/lib/my_lite6_control/target_6d_auto_real.py -> /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/python3.12/site-packages/my_lite6_control
+[0.787s] copying /home/joon/Projects/lite6_control/git/lite6_ws/build/my_lite6_control/build/lib/my_lite6_control/ik_node_moveit.py -> /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/python3.12/site-packages/my_lite6_control
+[0.787s] copying /home/joon/Projects/lite6_control/git/lite6_ws/build/my_lite6_control/build/lib/my_lite6_control/tcp_calibration.py -> /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/python3.12/site-packages/my_lite6_control
+[0.787s] copying /home/joon/Projects/lite6_control/git/lite6_ws/build/my_lite6_control/build/lib/my_lite6_control/view_joint.py -> /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/python3.12/site-packages/my_lite6_control
+[0.788s] copying /home/joon/Projects/lite6_control/git/lite6_ws/build/my_lite6_control/build/lib/my_lite6_control/simple_detection.py -> /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/python3.12/site-packages/my_lite6_control
+[0.788s] copying /home/joon/Projects/lite6_control/git/lite6_ws/build/my_lite6_control/build/lib/my_lite6_control/custom_ik_rotation.py -> /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/python3.12/site-packages/my_lite6_control
+[0.788s] copying /home/joon/Projects/lite6_control/git/lite6_ws/build/my_lite6_control/build/lib/my_lite6_control/custom_ik_control.py -> /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/python3.12/site-packages/my_lite6_control
+[0.788s] copying /home/joon/Projects/lite6_control/git/lite6_ws/build/my_lite6_control/build/lib/my_lite6_control/sequence_sim.py -> /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/python3.12/site-packages/my_lite6_control
+[0.788s] copying /home/joon/Projects/lite6_control/git/lite6_ws/build/my_lite6_control/build/lib/my_lite6_control/moveit2.py -> /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/python3.12/site-packages/my_lite6_control
+[0.788s] copying /home/joon/Projects/lite6_control/git/lite6_ws/build/my_lite6_control/build/lib/my_lite6_control/joint4.py -> /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/python3.12/site-packages/my_lite6_control
+[0.788s] copying /home/joon/Projects/lite6_control/git/lite6_ws/build/my_lite6_control/build/lib/my_lite6_control/__init__.py -> /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/python3.12/site-packages/my_lite6_control
+[0.788s] copying /home/joon/Projects/lite6_control/git/lite6_ws/build/my_lite6_control/build/lib/my_lite6_control/ik_node_moveit_sim_ptp.py -> /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/python3.12/site-packages/my_lite6_control
+[0.788s] copying /home/joon/Projects/lite6_control/git/lite6_ws/build/my_lite6_control/build/lib/my_lite6_control/ik_node_twist.py -> /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/python3.12/site-packages/my_lite6_control
+[0.788s] copying /home/joon/Projects/lite6_control/git/lite6_ws/build/my_lite6_control/build/lib/my_lite6_control/config.py -> /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/python3.12/site-packages/my_lite6_control
+[0.788s] byte-compiling /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/python3.12/site-packages/my_lite6_control/matrix_calculator.py to matrix_calculator.cpython-312.pyc
+[0.788s] byte-compiling /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/python3.12/site-packages/my_lite6_control/matrix_calculator_auto.py to matrix_calculator_auto.cpython-312.pyc
+[0.789s] byte-compiling /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/python3.12/site-packages/my_lite6_control/auto_pick_loop.py to auto_pick_loop.cpython-312.pyc
+[0.789s] byte-compiling /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/python3.12/site-packages/my_lite6_control/ik_node_moveit_sim.py to ik_node_moveit_sim.cpython-312.pyc
+[0.790s] byte-compiling /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/python3.12/site-packages/my_lite6_control/moveit2_action.py to moveit2_action.cpython-312.pyc
+[0.790s] byte-compiling /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/python3.12/site-packages/my_lite6_control/sequence_sim_custom_ik.py to sequence_sim_custom_ik.cpython-312.pyc
+[0.791s] byte-compiling /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/python3.12/site-packages/my_lite6_control/moveit2_test.py to moveit2_test.cpython-312.pyc
+[0.792s] byte-compiling /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/python3.12/site-packages/my_lite6_control/matrix_calculator_fix.py to matrix_calculator_fix.cpython-312.pyc
+[0.793s] byte-compiling /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/python3.12/site-packages/my_lite6_control/sequence_real_action.py to sequence_real_action.cpython-312.pyc
+[0.794s] byte-compiling /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/python3.12/site-packages/my_lite6_control/ik_node_ur5e.py to ik_node_ur5e.cpython-312.pyc
+[0.794s] byte-compiling /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/python3.12/site-packages/my_lite6_control/sequence_sim_action.py to sequence_sim_action.cpython-312.pyc
+[0.795s] byte-compiling /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/python3.12/site-packages/my_lite6_control/custom_ik.py to custom_ik.cpython-312.pyc
+[0.797s] byte-compiling /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/python3.12/site-packages/my_lite6_control/custom_ik_test.py to custom_ik_test.cpython-312.pyc
+[0.797s] byte-compiling /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/python3.12/site-packages/my_lite6_control/motion.py to motion.cpython-312.pyc
+[0.799s] byte-compiling /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/python3.12/site-packages/my_lite6_control/sequence_sim_action_fix.py to sequence_sim_action_fix.cpython-312.pyc
+[0.800s] byte-compiling /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/python3.12/site-packages/my_lite6_control/moveit2_cartesian.py to moveit2_cartesian.cpython-312.pyc
+[0.800s] byte-compiling /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/python3.12/site-packages/my_lite6_control/joint6.py to joint6.cpython-312.pyc
+[0.801s] byte-compiling /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/python3.12/site-packages/my_lite6_control/sequence.py to sequence.cpython-312.pyc
+[0.801s] byte-compiling /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/python3.12/site-packages/my_lite6_control/ee_6d.py to ee_6d.cpython-312.pyc
+[0.802s] byte-compiling /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/python3.12/site-packages/my_lite6_control/moveit2_servo.py to moveit2_servo.cpython-312.pyc
+[0.802s] byte-compiling /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/python3.12/site-packages/my_lite6_control/sequence_real.py to sequence_real.cpython-312.pyc
+[0.804s] byte-compiling /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/python3.12/site-packages/my_lite6_control/custom_ik_rotation_ur5e.py to custom_ik_rotation_ur5e.cpython-312.pyc
+[0.805s] byte-compiling /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/python3.12/site-packages/my_lite6_control/auto_pick_loop_sim.py to auto_pick_loop_sim.cpython-312.pyc
+[0.805s] byte-compiling /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/python3.12/site-packages/my_lite6_control/target_6d_auto_real.py to target_6d_auto_real.cpython-312.pyc
+[0.806s] byte-compiling /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/python3.12/site-packages/my_lite6_control/ik_node_moveit.py to ik_node_moveit.cpython-312.pyc
+[0.806s] byte-compiling /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/python3.12/site-packages/my_lite6_control/tcp_calibration.py to tcp_calibration.cpython-312.pyc
+[0.806s] byte-compiling /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/python3.12/site-packages/my_lite6_control/view_joint.py to view_joint.cpython-312.pyc
+[0.807s] byte-compiling /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/python3.12/site-packages/my_lite6_control/simple_detection.py to simple_detection.cpython-312.pyc
+[0.807s] byte-compiling /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/python3.12/site-packages/my_lite6_control/custom_ik_rotation.py to custom_ik_rotation.cpython-312.pyc
+[0.808s] byte-compiling /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/python3.12/site-packages/my_lite6_control/custom_ik_control.py to custom_ik_control.cpython-312.pyc
+[0.809s] byte-compiling /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/python3.12/site-packages/my_lite6_control/sequence_sim.py to sequence_sim.cpython-312.pyc
+[0.810s] byte-compiling /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/python3.12/site-packages/my_lite6_control/moveit2.py to moveit2.cpython-312.pyc
+[0.810s] byte-compiling /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/python3.12/site-packages/my_lite6_control/joint4.py to joint4.cpython-312.pyc
+[0.811s] byte-compiling /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/python3.12/site-packages/my_lite6_control/__init__.py to __init__.cpython-312.pyc
+[0.811s] byte-compiling /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/python3.12/site-packages/my_lite6_control/ik_node_moveit_sim_ptp.py to ik_node_moveit_sim_ptp.cpython-312.pyc
+[0.811s] byte-compiling /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/python3.12/site-packages/my_lite6_control/ik_node_twist.py to ik_node_twist.cpython-312.pyc
+[0.812s] byte-compiling /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/python3.12/site-packages/my_lite6_control/config.py to config.cpython-312.pyc
+[0.814s] running install_data
+[0.824s] creating /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/share/ament_index
+[0.825s] creating /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/share/ament_index/resource_index
+[0.825s] creating /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/share/ament_index/resource_index/packages
+[0.825s] copying resource/my_lite6_control -> /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/share/ament_index/resource_index/packages
+[0.825s] copying package.xml -> /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/share/my_lite6_control
+[0.825s] creating /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/share/my_lite6_control/launch
+[0.825s] copying launch/lite6_custom_ik.launch.py -> /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/share/my_lite6_control/launch
+[0.825s] copying launch/lite6_real.launch.py -> /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/share/my_lite6_control/launch
+[0.825s] copying launch/lite6_sim.launch.py -> /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/share/my_lite6_control/launch
+[0.825s] creating /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/share/my_lite6_control/config
+[0.825s] copying config/real.yaml -> /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/share/my_lite6_control/config
+[0.825s] copying config/default.yaml -> /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/share/my_lite6_control/config
+[0.825s] creating /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/share/my_lite6_control/config/robots
+[0.825s] copying config/robots/lite6.yaml -> /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/share/my_lite6_control/config/robots
+[0.825s] running install_egg_info
+[0.837s] Copying ../../build/my_lite6_control/my_lite6_control.egg-info to /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/python3.12/site-packages/my_lite6_control-0.0.0-py3.12.egg-info
+[0.837s] running install_scripts
+[0.880s] Installing auto_pick_loop script to /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/my_lite6_control
+[0.880s] Installing auto_pick_loop_sim script to /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/my_lite6_control
+[0.880s] Installing custom_ik script to /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/my_lite6_control
+[0.880s] Installing custom_ik_rotation script to /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/my_lite6_control
+[0.880s] Installing ik_node_moveit script to /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/my_lite6_control
+[0.880s] Installing ik_node_twist script to /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/my_lite6_control
+[0.880s] Installing ik_node_ur5e script to /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/my_lite6_control
+[0.880s] Installing joint4 script to /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/my_lite6_control
+[0.880s] Installing joint6 script to /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/my_lite6_control
+[0.880s] Installing moveit2 script to /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/my_lite6_control
+[0.880s] Installing moveit2_action script to /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/my_lite6_control
+[0.880s] Installing moveit2_cartesian script to /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/my_lite6_control
+[0.880s] Installing moveit2_servo script to /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/my_lite6_control
+[0.880s] Installing moveit2_test script to /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/my_lite6_control
+[0.880s] Installing sequence script to /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/my_lite6_control
+[0.880s] Installing sequence_real script to /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/my_lite6_control
+[0.881s] Installing sequence_real_action script to /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/my_lite6_control
+[0.881s] Installing sequence_sim script to /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/my_lite6_control
+[0.881s] Installing sequence_sim_action script to /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/my_lite6_control
+[0.881s] Installing sequence_sim_action_fix script to /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/my_lite6_control
+[0.881s] Installing sequence_sim_custom_ik script to /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/my_lite6_control
+[0.881s] Installing simple_detection script to /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/my_lite6_control
+[0.881s] Installing target_6d_auto_real script to /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/my_lite6_control
+[0.881s] Installing view_joint script to /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/my_lite6_control
+[0.881s] writing list of installed files to '/home/joon/Projects/lite6_control/git/lite6_ws/build/my_lite6_control/install.log'
+[0.901s] Invoked command in '/home/joon/Projects/lite6_control/git/lite6_ws/src/my_lite6_control' returned '0': PYTHONPATH=/home/joon/Projects/lite6_control/git/lite6_ws/build/my_lite6_control/prefix_override:/home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/python3.12/site-packages:${PYTHONPATH} /usr/bin/python3 setup.py egg_info --egg-base ../../build/my_lite6_control build --build-base /home/joon/Projects/lite6_control/git/lite6_ws/build/my_lite6_control/build install --record /home/joon/Projects/lite6_control/git/lite6_ws/build/my_lite6_control/install.log --single-version-externally-managed

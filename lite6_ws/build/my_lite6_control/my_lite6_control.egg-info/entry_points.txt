@@ -8,6 +8,7 @@ ik_node_twist = my_lite6_control.ik_node_twist:main
 ik_node_ur5e = my_lite6_control.ik_node_ur5e:main
 joint4 = my_lite6_control.joint4:main
 joint6 = my_lite6_control.joint6:main
+move_to = my_lite6_control.move_to:main
 moveit2 = my_lite6_control.moveit2:main
 moveit2_action = my_lite6_control.moveit2_action:main
 moveit2_cartesian = my_lite6_control.moveit2_cartesian:main

@@ -1,0 +1,54 @@
+running egg_info
+writing ../../build/my_lite6_control/my_lite6_control.egg-info/PKG-INFO
+writing dependency_links to ../../build/my_lite6_control/my_lite6_control.egg-info/dependency_links.txt
+writing entry points to ../../build/my_lite6_control/my_lite6_control.egg-info/entry_points.txt
+writing requirements to ../../build/my_lite6_control/my_lite6_control.egg-info/requires.txt
+writing top-level names to ../../build/my_lite6_control/my_lite6_control.egg-info/top_level.txt
+reading manifest file '../../build/my_lite6_control/my_lite6_control.egg-info/SOURCES.txt'
+writing manifest file '../../build/my_lite6_control/my_lite6_control.egg-info/SOURCES.txt'
+running build
+running build_py
+copying my_lite6_control/move_to.py -> /home/joon/Projects/lite6_control/git/lite6_ws/build/my_lite6_control/build/lib/my_lite6_control
+copying my_lite6_control/motion.py -> /home/joon/Projects/lite6_control/git/lite6_ws/build/my_lite6_control/build/lib/my_lite6_control
+copying my_lite6_control/config.py -> /home/joon/Projects/lite6_control/git/lite6_ws/build/my_lite6_control/build/lib/my_lite6_control
+running install
+running install_lib
+copying /home/joon/Projects/lite6_control/git/lite6_ws/build/my_lite6_control/build/lib/my_lite6_control/move_to.py -> /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/python3.12/site-packages/my_lite6_control
+copying /home/joon/Projects/lite6_control/git/lite6_ws/build/my_lite6_control/build/lib/my_lite6_control/motion.py -> /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/python3.12/site-packages/my_lite6_control
+copying /home/joon/Projects/lite6_control/git/lite6_ws/build/my_lite6_control/build/lib/my_lite6_control/config.py -> /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/python3.12/site-packages/my_lite6_control
+byte-compiling /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/python3.12/site-packages/my_lite6_control/move_to.py to move_to.cpython-312.pyc
+byte-compiling /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/python3.12/site-packages/my_lite6_control/motion.py to motion.cpython-312.pyc
+byte-compiling /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/python3.12/site-packages/my_lite6_control/config.py to config.cpython-312.pyc
+running install_data
+copying config/default.yaml -> /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/share/my_lite6_control/config
+copying config/robots/lite6.yaml -> /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/share/my_lite6_control/config/robots
+running install_egg_info
+removing '/home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/python3.12/site-packages/my_lite6_control-0.0.0-py3.12.egg-info' (and everything under it)
+Copying ../../build/my_lite6_control/my_lite6_control.egg-info to /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/python3.12/site-packages/my_lite6_control-0.0.0-py3.12.egg-info
+running install_scripts
+Installing auto_pick_loop script to /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/my_lite6_control
+Installing auto_pick_loop_sim script to /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/my_lite6_control
+Installing custom_ik script to /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/my_lite6_control
+Installing custom_ik_rotation script to /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/my_lite6_control
+Installing ik_node_moveit script to /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/my_lite6_control
+Installing ik_node_twist script to /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/my_lite6_control
+Installing ik_node_ur5e script to /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/my_lite6_control
+Installing joint4 script to /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/my_lite6_control
+Installing joint6 script to /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/my_lite6_control
+Installing move_to script to /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/my_lite6_control
+Installing moveit2 script to /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/my_lite6_control
+Installing moveit2_action script to /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/my_lite6_control
+Installing moveit2_cartesian script to /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/my_lite6_control
+Installing moveit2_servo script to /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/my_lite6_control
+Installing moveit2_test script to /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/my_lite6_control
+Installing sequence script to /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/my_lite6_control
+Installing sequence_real script to /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/my_lite6_control
+Installing sequence_real_action script to /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/my_lite6_control
+Installing sequence_sim script to /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/my_lite6_control
+Installing sequence_sim_action script to /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/my_lite6_control
+Installing sequence_sim_action_fix script to /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/my_lite6_control
+Installing sequence_sim_custom_ik script to /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/my_lite6_control
+Installing simple_detection script to /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/my_lite6_control
+Installing target_6d_auto_real script to /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/my_lite6_control
+Installing view_joint script to /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/my_lite6_control
+writing list of installed files to '/home/joon/Projects/lite6_control/git/lite6_ws/build/my_lite6_control/install.log'

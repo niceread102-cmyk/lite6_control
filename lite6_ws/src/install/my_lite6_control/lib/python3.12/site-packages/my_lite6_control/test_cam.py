@@ -5,20 +5,21 @@ from rclpy.node import Node
 from geometry_msgs.msg import Pose
 from scipy.spatial.transform import Rotation
 
-t_cam_base = np.array([0.31, -0.30, 0.69])
-
-R_cam_base = Rotation.from_euler('x', 180, degrees=True).as_matrix()
-
-T_cam_base = np.eye(4)
-T_cam_base[:3, :3] = R_cam_base
-T_cam_base[:3, 3] = t_cam_base
+# Camera -> robot_base extrinsic: p_base = T_cam_base @ p_cam (m). Hand-eye calibration
+# ~/Projects/xarm_lite6/cam2robot_pos_calibration/result/T_base_cam.yaml (touch/board_model, 2026-10-27 16:45, RMS 1.1 mm)
+T_cam_base = np.array([
+    [-0.00169203, -0.99945118,  0.03308287,  0.25562417],
+    [-0.97936149,  0.00834258,  0.20194425, -0.25696641],
+    [-0.20210942, -0.03205840, -0.97883811,  0.71477754],
+    [ 0.0,         0.0,         0.0,         1.0],
+])
+R_cam_base = T_cam_base[:3, :3]
+t_cam_base = T_cam_base[:3, 3]
 
 
 def cam_to_base(p_cam_xyz):
     p_cam_h = np.append(np.asarray(p_cam_xyz, dtype=float), 1.0)
     p_base_h = T_cam_base @ p_cam_h
-
-    p_base_h[1] = -p_base_h[1]
 
     return p_base_h[:3]
 

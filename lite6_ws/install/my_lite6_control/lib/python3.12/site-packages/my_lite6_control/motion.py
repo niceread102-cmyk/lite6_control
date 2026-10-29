@@ -28,12 +28,18 @@ def to_seconds(d: Duration) -> float:
     return d.sec + d.nanosec * 1e-9
 
 
+def tcp_offset_vec(cfg) -> np.ndarray:
+    """robot.tcp_offset_m as [x, y, z] in the eef_link frame (a single number = z only)."""
+    off = cfg.robot.tcp_offset_m
+    return np.array([0.0, 0.0, float(off)]) if np.isscalar(off) else np.asarray(off, dtype=float)
+
+
 def eef_target_from_tcp(pose: Pose, cfg) -> PoseStamped:
-    """TCP pose -> pose of the IK link (robot.eef_link): back off robot.tcp_offset_m along the tool z axis."""
+    """TCP pose -> pose of the IK link (robot.eef_link): back off robot.tcp_offset_m (eef_link frame)."""
     R       = Rotation.from_quat([pose.orientation.x, pose.orientation.y,
                                    pose.orientation.z, pose.orientation.w]).as_matrix()
     tcp_pos = np.array([pose.position.x, pose.position.y, pose.position.z])
-    eef_pos = tcp_pos - R @ np.array([0.0, 0.0, cfg.robot.tcp_offset_m])
+    eef_pos = tcp_pos - R @ tcp_offset_vec(cfg)
 
     target = PoseStamped()
     target.header.frame_id = cfg.robot.base_frame

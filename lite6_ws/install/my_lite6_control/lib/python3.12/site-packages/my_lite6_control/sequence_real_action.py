@@ -4,6 +4,7 @@ from rclpy.action import ActionClient
 from rclpy.executors import MultiThreadedExecutor
 from geometry_msgs.msg import Pose
 from sensor_msgs.msg import JointState
+from std_msgs.msg import Empty
 from trajectory_msgs.msg import JointTrajectory
 from moveit_msgs.action import MoveGroup
 from moveit_msgs.srv import GetPositionIK
@@ -43,6 +44,7 @@ class SequenceRealNode(Node):
         self._poses       = {name: named_pose(self.cfg, name) for name in POSE_NAMES}
         self._traj_client = ActionClient(self, FollowJointTrajectory, ros.trajectory_action)
         self.pose_sub     = self.create_subscription(Pose, ros.target_pose_topic, self._cb_target_pose, 10)
+        self.home_sub     = self.create_subscription(Empty, ros.home_request_topic, self._cb_home_request, 10)
         self.joint_state_sub = self.create_subscription(JointState, ros.joint_states_topic, self._cb_joint_state, 10)
         self._client      = ActionClient(self, MoveGroup, ros.move_group_action)
         self._ik_client   = self.create_client(GetPositionIK, ros.compute_ik_service)
@@ -50,6 +52,9 @@ class SequenceRealNode(Node):
         self._grasp_pose  = None
         self._pending_target = None
         self._busy        = False
+        self._abort       = None   # home request during a cycle: None | 'requested' | 'retreating'
+        self._abort_from  = None   # state the cycle was aborted in (decides the way out)
+        self._traj_handle = None   # running FollowJointTrajectory goal (cancelled on abort)
         self.current_joint_state = None
 
         self.get_logger().info(describe(self.cfg))
@@ -58,7 +63,8 @@ class SequenceRealNode(Node):
     def _start_init(self):
         self._startup_timer.cancel()
         self.send_home(on_done=self._on_init_done)
-        self.call_gripper(self.cfg.robot.gripper.open_service)
+        # self.call_gripper(self.cfg.robot.gripper.open_service)
+        self.call_gripper(self.cfg.robot.gripper.close_service)
 
     def _on_init_done(self, ok):
         if not ok:
@@ -101,7 +107,62 @@ class SequenceRealNode(Node):
         self.get_logger().info('[TO_INIT] re-homing to init pose before approaching target')
         self.send_init(on_done=self._on_to_init_done)
 
+    def _cb_home_request(self, _msg: Empty):
+        # idle: home now. Cycle before the grasp (TO_INIT, approach = MOVE while busy, DIVE): abort at once, the
+        # running trajectory is cancelled and the arm leaves the way it would have (_abort_route). After the grasp
+        # the part is placed first (the cycle ends at home anyway). The startup home move is never interrupted.
+        if self._state == ControlState.INIT:
+            self.get_logger().warn('Startup home move running, ignoring home request')
+            return
+        if not self._busy:
+            self._busy = True
+            self._state = ControlState.HOME
+            self.get_logger().info('[HOME] home requested')
+            self.send_home(on_done=self._on_cycle_done)
+            return
+        if self._abort is not None:
+            return
+        if self._state not in (ControlState.TO_INIT, ControlState.MOVE, ControlState.DIVE):
+            self.get_logger().info(f'[HOME] home requested in {self._state.name}: past the grasp, the part is placed '
+                                   'first and the cycle ends at home')
+            return
+        self._abort, self._abort_from = 'requested', self._state
+        self.get_logger().warn(f'[ABORT] home requested in {self._state.name}: stopping the approach')
+        if self._traj_handle is not None:
+            self._traj_handle.cancel_goal_async()   # the step's on_done follows and takes _abort_route
+
+    def _abort_route(self):
+        """Way home from an aborted approach: DIVE -> back up to pre-grasp -> init -> home, approach -> init ->
+        home, TO_INIT (between home and init) -> home."""
+        self._abort = 'retreating'
+        if self._abort_from == ControlState.DIVE:
+            self._state = ControlState.LIFT
+            self.get_logger().info('[ABORT] backing up to the pre-grasp pose')
+            self._move_to(self._pre_pose, self._on_abort_retreat_done)
+        elif self._abort_from == ControlState.MOVE:
+            self._on_abort_retreat_done(True)
+        else:
+            self._state = ControlState.HOME
+            self.get_logger().info('[ABORT] returning home')
+            self.send_home(on_done=self._on_abort_done)
+
+    def _on_abort_retreat_done(self, ok):
+        if not ok:
+            self.get_logger().error('[ABORT] failed to back up out of the bin: staying here')
+            self._on_abort_done(False)
+            return
+        self._state = ControlState.HOME
+        self.get_logger().info('[ABORT] returning home via init')
+        self.send_init(on_done=lambda ok: self.send_home(on_done=self._on_abort_done))
+
+    def _on_abort_done(self, ok):
+        self._abort = self._abort_from = None
+        self._on_cycle_done(ok)
+
     def _on_to_init_done(self, ok):
+        if self._abort:
+            self._abort_route()
+            return
         self._state = ControlState.MOVE
         if not ok:
             self.get_logger().error('[TO_INIT] failed to reach init pose')
@@ -115,6 +176,9 @@ class SequenceRealNode(Node):
         self._move_to(self._pre_pose, self._on_pre_grasp_done)
 
     def _on_pre_grasp_done(self, ok):
+        if self._abort:
+            self._abort_route()
+            return
         if not ok:
             self._state = ControlState.MOVE
             self._busy = False
@@ -129,6 +193,9 @@ class SequenceRealNode(Node):
         self._move_to(descend_pose, self._on_descend_done)
 
     def _on_descend_done(self, ok):
+        if self._abort:
+            self._abort_route()
+            return
         if not ok:
             self._state = ControlState.MOVE
             self._busy = False
@@ -140,7 +207,9 @@ class SequenceRealNode(Node):
     def _do_grasp(self):
         self._grasp_settle_timer.cancel()
         self.get_logger().info('[GRASP] closing gripper')
-        self.call_gripper(self.cfg.robot.gripper.close_service)
+        #self.call_gripper(self.cfg.robot.gripper.close_service)
+        self.call_gripper(self.cfg.robot.gripper.open_service)
+
         self._after_grasp()
 
     def _after_grasp(self):
@@ -177,7 +246,9 @@ class SequenceRealNode(Node):
             self.get_logger().error('[GOAL] failed to reach goal pose')
         self._state = ControlState.DROP
         self.get_logger().info('[DROP] opening gripper')
-        self.call_gripper(self.cfg.robot.gripper.open_service)
+        #self.call_gripper(self.cfg.robot.gripper.open_service)
+        self.call_gripper(self.cfg.robot.gripper.close_service)
+
         self._drop_timer = self.create_timer(self.cfg.sequence.drop_wait_s, self._return_home_final)
 
     def _return_home_final(self):
@@ -210,6 +281,9 @@ class SequenceRealNode(Node):
             lambda future: self._on_ik_result(future, on_done))
 
     def _on_ik_result(self, future, on_done):
+        if self._abort == 'requested':   # aborted while solving: do not start the approach move
+            on_done(False)
+            return
         joint_targets, err = ik_joint_targets(future.result(), self.cfg)
         if err:
             self.get_logger().error(f'[FAIL] {err}')
@@ -248,6 +322,9 @@ class SequenceRealNode(Node):
             on_done(False)
             return
 
+        if self._abort == 'requested':   # aborted while planning: do not execute the plan
+            on_done(False)
+            return
         traj = result.planned_trajectory.joint_trajectory
         if not prepare_trajectory(traj, self.cfg, self.get_logger()):
             on_done(False)
@@ -275,10 +352,14 @@ class SequenceRealNode(Node):
             if on_done:
                 on_done(False)
             return
+        self._traj_handle = handle
+        if self._abort == 'requested':   # abort came while this goal was on its way: stop it now
+            handle.cancel_goal_async()
         handle.get_result_async().add_done_callback(
             lambda future: self._traj_result_cb(future, on_done))
 
     def _traj_result_cb(self, future, on_done):
+        self._traj_handle = None
         result = future.result().result
         ok = (result.error_code == FollowJointTrajectory.Result.SUCCESSFUL)
         if not ok:

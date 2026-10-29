@@ -1,0 +1,89 @@
+[0.000000] (-) TimerEvent: {}
+[0.000189] (my_lite6_control) JobQueued: {'identifier': 'my_lite6_control', 'dependencies': OrderedDict()}
+[0.000751] (my_lite6_control) JobStarted: {'identifier': 'my_lite6_control'}
+[0.099555] (-) TimerEvent: {}
+[0.199872] (-) TimerEvent: {}
+[0.300298] (-) TimerEvent: {}
+[0.400745] (-) TimerEvent: {}
+[0.501058] (-) TimerEvent: {}
+[0.601422] (-) TimerEvent: {}
+[0.701816] (-) TimerEvent: {}
+[0.802212] (-) TimerEvent: {}
+[0.902732] (-) TimerEvent: {}
+[0.937776] (my_lite6_control) Command: {'cmd': ['/usr/bin/python3', 'setup.py', 'egg_info', '--egg-base', '../../build/my_lite6_control', 'build', '--build-base', '/home/joon/Projects/lite6_control/git/lite6_ws/build/my_lite6_control/build', 'install', '--record', '/home/joon/Projects/lite6_control/git/lite6_ws/build/my_lite6_control/install.log', '--single-version-externally-managed'], 'cwd': '/home/joon/Projects/lite6_control/git/lite6_ws/src/my_lite6_control', 'env': {'GZ_SIM_SYSTEM_PLUGIN_PATH': '/opt/ros/jazzy/lib', 'GZ_SIM_RESOURCE_PATH': '/opt/ros/jazzy/share', 'GZ_CONFIG_PATH': '/opt/ros/jazzy/opt/gz_sim_vendor/share/gz:/opt/ros/jazzy/opt/sdformat_vendor/share/gz:/opt/ros/jazzy/opt/gz_gui_vendor/share/gz:/opt/ros/jazzy/opt/gz_transport_vendor/share/gz:/opt/ros/jazzy/opt/gz_rendering_vendor/share/gz:/opt/ros/jazzy/opt/gz_plugin_vendor/share/gz:/opt/ros/jazzy/opt/gz_fuel_tools_vendor/share/gz:/opt/ros/jazzy/opt/gz_msgs_vendor/share/gz:/opt/ros/jazzy/opt/gz_common_vendor/share/gz', 'SHLVL': '1', 'LD_LIBRARY_PATH': '/home/joon/Projects/lite6_control/git/xarm_ros2/install/xarm_planner/lib:/home/joon/Projects/lite6_control/git/xarm_ros2/install/xarm_moveit_servo/lib:/home/joon/Projects/lite6_control/git/xarm_ros2/install/xarm_gazebo/lib:/home/joon/Projects/lite6_control/git/xarm_ros2/install/xarm_controller/lib:/home/joon/Projects/lite6_control/git/xarm_ros2/install/xarm_api/lib:/home/joon/Projects/lite6_control/git/xarm_ros2/install/xarm_sdk/lib:/home/joon/Projects/lite6_control/git/xarm_ros2/install/xarm_msgs/lib:/home/joon/Projects/lite6_control/git/xarm_ros2/install/realsense_gazebo_plugin/lib:/opt/ros/jazzy/opt/gz_sim_vendor/lib:/opt/ros/jazzy/opt/gz_sensors_vendor/lib:/opt/ros/jazzy/opt/gz_physics_vendor/lib:/opt/ros/jazzy/opt/sdformat_vendor/lib:/opt/ros/jazzy/opt/rviz_ogre_vendor/lib:/opt/ros/jazzy/lib/aarch64-linux-gnu:/opt/ros/jazzy/opt/gz_gui_vendor/lib:/opt/ros/jazzy/opt/gz_transport_vendor/lib:/opt/ros/jazzy/opt/gz_rendering_vendor/lib:/opt/ros/jazzy/opt/gz_plugin_vendor/lib:/opt/ros/jazzy/opt/gz_fuel_tools_vendor/lib:/opt/ros/jazzy/opt/gz_msgs_vendor/lib:/opt/ros/jazzy/opt/gz_common_vendor/lib:/opt/ros/jazzy/opt/gz_math_vendor/lib:/opt/ros/jazzy/opt/gz_utils_vendor/lib:/opt/ros/jazzy/opt/gz_tools_vendor/lib:/opt/ros/jazzy/opt/gz_ogre_next_vendor/lib:/opt/ros/jazzy/opt/gz_dartsim_vendor/lib:/opt/ros/jazzy/opt/gz_cmake_vendor/lib:/opt/ros/jazzy/lib', 'HOME': '/home/joon', 'ROS_PYTHON_VERSION': '3', 'LC_CTYPE': 'C.UTF-8', 'COLCON_PREFIX_PATH': '/home/joon/Projects/lite6_control/git/xarm_ros2/install', 'ROS_DISTRO': 'jazzy', '_': '/usr/bin/colcon', 'ROS_VERSION': '2', 'TERM': 'dumb', 'PATH': '/opt/ros/jazzy/opt/gz_msgs_vendor/bin:/opt/ros/jazzy/opt/gz_tools_vendor/bin:/opt/ros/jazzy/opt/gz_ogre_next_vendor/bin:/opt/ros/jazzy/bin:/usr/local/bin:/usr/bin:/bin', 'AMENT_PREFIX_PATH': '/home/joon/Projects/lite6_control/git/xarm_ros2/install/xarm_planner:/home/joon/Projects/lite6_control/git/xarm_ros2/install/xarm_moveit_servo:/home/joon/Projects/lite6_control/git/xarm_ros2/install/xarm_moveit_config:/home/joon/Projects/lite6_control/git/xarm_ros2/install/xarm_gazebo:/home/joon/Projects/lite6_control/git/xarm_ros2/install/xarm_controller:/home/joon/Projects/lite6_control/git/xarm_ros2/install/xarm_api:/home/joon/Projects/lite6_control/git/xarm_ros2/install/xarm_sdk:/home/joon/Projects/lite6_control/git/xarm_ros2/install/xarm_msgs:/home/joon/Projects/lite6_control/git/xarm_ros2/install/xarm_description:/home/joon/Projects/lite6_control/git/xarm_ros2/install/mbot_demo:/home/joon/Projects/lite6_control/git/xarm_ros2/install/uf_ros_lib:/home/joon/Projects/lite6_control/git/xarm_ros2/install/realsense_gazebo_plugin:/opt/ros/jazzy', 'ROS_AUTOMATIC_DISCOVERY_RANGE': 'SUBNET', 'PWD': '/home/joon/Projects/lite6_control/git/lite6_ws/build/my_lite6_control', 'PYTHONPATH': '/home/joon/Projects/lite6_control/git/lite6_ws/build/my_lite6_control/prefix_override:/home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/python3.12/site-packages:/home/joon/Projects/lite6_control/git/xarm_ros2/install/xarm_msgs/lib/python3.12/site-packages:/home/joon/Projects/lite6_control/git/xarm_ros2/install/uf_ros_lib/lib/python3.12/site-packages:/opt/ros/jazzy/lib/python3.12/site-packages', 'COLCON': '1', 'CMAKE_PREFIX_PATH': '/home/joon/Projects/lite6_control/git/xarm_ros2/install/xarm_planner:/home/joon/Projects/lite6_control/git/xarm_ros2/install/xarm_moveit_servo:/home/joon/Projects/lite6_control/git/xarm_ros2/install/xarm_moveit_config:/home/joon/Projects/lite6_control/git/xarm_ros2/install/xarm_gazebo:/home/joon/Projects/lite6_control/git/xarm_ros2/install/xarm_controller:/home/joon/Projects/lite6_control/git/xarm_ros2/install/xarm_api:/home/joon/Projects/lite6_control/git/xarm_ros2/install/xarm_sdk:/home/joon/Projects/lite6_control/git/xarm_ros2/install/xarm_msgs:/home/joon/Projects/lite6_control/git/xarm_ros2/install/xarm_description:/home/joon/Projects/lite6_control/git/xarm_ros2/install/mbot_demo:/home/joon/Projects/lite6_control/git/xarm_ros2/install/realsense_gazebo_plugin:/opt/ros/jazzy/opt/gz_sim_vendor:/opt/ros/jazzy/opt/gz_sensors_vendor:/opt/ros/jazzy/opt/gz_physics_vendor:/opt/ros/jazzy/opt/sdformat_vendor:/opt/ros/jazzy/opt/gz_gui_vendor:/opt/ros/jazzy/opt/gz_transport_vendor:/opt/ros/jazzy/opt/gz_rendering_vendor:/opt/ros/jazzy/opt/gz_plugin_vendor:/opt/ros/jazzy/opt/gz_fuel_tools_vendor:/opt/ros/jazzy/opt/gz_msgs_vendor:/opt/ros/jazzy/opt/gz_common_vendor:/opt/ros/jazzy/opt/gz_math_vendor:/opt/ros/jazzy/opt/gz_utils_vendor:/opt/ros/jazzy/opt/gz_tools_vendor:/opt/ros/jazzy/opt/gz_ogre_next_vendor:/opt/ros/jazzy/opt/gz_dartsim_vendor:/opt/ros/jazzy/opt/gz_cmake_vendor'}, 'shell': False}
+[1.003027] (-) TimerEvent: {}
+[1.103659] (-) TimerEvent: {}
+[1.155738] (my_lite6_control) StdoutLine: {'line': b'running egg_info\n'}
+[1.171269] (my_lite6_control) StdoutLine: {'line': b'writing ../../build/my_lite6_control/my_lite6_control.egg-info/PKG-INFO\n'}
+[1.171743] (my_lite6_control) StdoutLine: {'line': b'writing dependency_links to ../../build/my_lite6_control/my_lite6_control.egg-info/dependency_links.txt\n'}
+[1.171823] (my_lite6_control) StdoutLine: {'line': b'writing entry points to ../../build/my_lite6_control/my_lite6_control.egg-info/entry_points.txt\n'}
+[1.171972] (my_lite6_control) StdoutLine: {'line': b'writing requirements to ../../build/my_lite6_control/my_lite6_control.egg-info/requires.txt\n'}
+[1.172053] (my_lite6_control) StdoutLine: {'line': b'writing top-level names to ../../build/my_lite6_control/my_lite6_control.egg-info/top_level.txt\n'}
+[1.203802] (-) TimerEvent: {}
+[1.273271] (my_lite6_control) StdoutLine: {'line': b"reading manifest file '../../build/my_lite6_control/my_lite6_control.egg-info/SOURCES.txt'\n"}
+[1.275204] (my_lite6_control) StdoutLine: {'line': b"writing manifest file '../../build/my_lite6_control/my_lite6_control.egg-info/SOURCES.txt'\n"}
+[1.275529] (my_lite6_control) StdoutLine: {'line': b'running build\n'}
+[1.275653] (my_lite6_control) StdoutLine: {'line': b'running build_py\n'}
+[1.275719] (my_lite6_control) StdoutLine: {'line': b'copying my_lite6_control/move_to.py -> /home/joon/Projects/lite6_control/git/lite6_ws/build/my_lite6_control/build/lib/my_lite6_control\n'}
+[1.276130] (my_lite6_control) StdoutLine: {'line': b'copying my_lite6_control/motion.py -> /home/joon/Projects/lite6_control/git/lite6_ws/build/my_lite6_control/build/lib/my_lite6_control\n'}
+[1.276980] (my_lite6_control) StdoutLine: {'line': b'copying my_lite6_control/config.py -> /home/joon/Projects/lite6_control/git/lite6_ws/build/my_lite6_control/build/lib/my_lite6_control\n'}
+[1.277038] (my_lite6_control) StdoutLine: {'line': b'running install\n'}
+[1.277303] (my_lite6_control) StderrLine: {'line': b'/usr/lib/python3/dist-packages/setuptools/_distutils/cmd.py:66: SetuptoolsDeprecationWarning: setup.py install is deprecated.\n'}
+[1.277483] (my_lite6_control) StderrLine: {'line': b'!!\n'}
+[1.277521] (my_lite6_control) StderrLine: {'line': b'\n'}
+[1.277554] (my_lite6_control) StderrLine: {'line': b'        ********************************************************************************\n'}
+[1.277587] (my_lite6_control) StderrLine: {'line': b'        Please avoid running ``setup.py`` directly.\n'}
+[1.277615] (my_lite6_control) StderrLine: {'line': b'        Instead, use pypa/build, pypa/installer or other\n'}
+[1.277640] (my_lite6_control) StderrLine: {'line': b'        standards-based tools.\n'}
+[1.277668] (my_lite6_control) StderrLine: {'line': b'\n'}
+[1.277695] (my_lite6_control) StderrLine: {'line': b'        See https://blog.ganssle.io/articles/2021/10/setup-py-deprecated.html for details.\n'}
+[1.277728] (my_lite6_control) StderrLine: {'line': b'        ********************************************************************************\n'}
+[1.277757] (my_lite6_control) StderrLine: {'line': b'\n'}
+[1.277784] (my_lite6_control) StderrLine: {'line': b'!!\n'}
+[1.277815] (my_lite6_control) StderrLine: {'line': b'  self.initialize_options()\n'}
+[1.280993] (my_lite6_control) StdoutLine: {'line': b'running install_lib\n'}
+[1.298050] (my_lite6_control) StdoutLine: {'line': b'copying /home/joon/Projects/lite6_control/git/lite6_ws/build/my_lite6_control/build/lib/my_lite6_control/move_to.py -> /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/python3.12/site-packages/my_lite6_control\n'}
+[1.298579] (my_lite6_control) StdoutLine: {'line': b'copying /home/joon/Projects/lite6_control/git/lite6_ws/build/my_lite6_control/build/lib/my_lite6_control/motion.py -> /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/python3.12/site-packages/my_lite6_control\n'}
+[1.299287] (my_lite6_control) StdoutLine: {'line': b'copying /home/joon/Projects/lite6_control/git/lite6_ws/build/my_lite6_control/build/lib/my_lite6_control/config.py -> /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/python3.12/site-packages/my_lite6_control\n'}
+[1.299540] (my_lite6_control) StdoutLine: {'line': b'byte-compiling /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/python3.12/site-packages/my_lite6_control/move_to.py to move_to.cpython-312.pyc\n'}
+[1.300310] (my_lite6_control) StdoutLine: {'line': b'byte-compiling /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/python3.12/site-packages/my_lite6_control/motion.py to motion.cpython-312.pyc\n'}
+[1.302273] (my_lite6_control) StdoutLine: {'line': b'byte-compiling /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/python3.12/site-packages/my_lite6_control/config.py to config.cpython-312.pyc\n'}
+[1.303852] (-) TimerEvent: {}
+[1.306186] (my_lite6_control) StdoutLine: {'line': b'running install_data\n'}
+[1.322292] (my_lite6_control) StdoutLine: {'line': b'copying config/default.yaml -> /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/share/my_lite6_control/config\n'}
+[1.322998] (my_lite6_control) StdoutLine: {'line': b'copying config/robots/lite6.yaml -> /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/share/my_lite6_control/config/robots\n'}
+[1.323111] (my_lite6_control) StdoutLine: {'line': b'running install_egg_info\n'}
+[1.343668] (my_lite6_control) StdoutLine: {'line': b"removing '/home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/python3.12/site-packages/my_lite6_control-0.0.0-py3.12.egg-info' (and everything under it)\n"}
+[1.344307] (my_lite6_control) StdoutLine: {'line': b'Copying ../../build/my_lite6_control/my_lite6_control.egg-info to /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/python3.12/site-packages/my_lite6_control-0.0.0-py3.12.egg-info\n'}
+[1.345282] (my_lite6_control) StdoutLine: {'line': b'running install_scripts\n'}
+[1.403970] (-) TimerEvent: {}
+[1.404348] (my_lite6_control) StdoutLine: {'line': b'Installing auto_pick_loop script to /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/my_lite6_control\n'}
+[1.404796] (my_lite6_control) StdoutLine: {'line': b'Installing auto_pick_loop_sim script to /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/my_lite6_control\n'}
+[1.404903] (my_lite6_control) StdoutLine: {'line': b'Installing custom_ik script to /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/my_lite6_control\n'}
+[1.404967] (my_lite6_control) StdoutLine: {'line': b'Installing custom_ik_rotation script to /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/my_lite6_control\n'}
+[1.405040] (my_lite6_control) StdoutLine: {'line': b'Installing ik_node_moveit script to /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/my_lite6_control\n'}
+[1.405098] (my_lite6_control) StdoutLine: {'line': b'Installing ik_node_twist script to /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/my_lite6_control\n'}
+[1.405154] (my_lite6_control) StdoutLine: {'line': b'Installing ik_node_ur5e script to /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/my_lite6_control\n'}
+[1.405462] (my_lite6_control) StdoutLine: {'line': b'Installing joint4 script to /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/my_lite6_control\n'}
+[1.405664] (my_lite6_control) StdoutLine: {'line': b'Installing joint6 script to /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/my_lite6_control\n'}
+[1.405805] (my_lite6_control) StdoutLine: {'line': b'Installing move_to script to /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/my_lite6_control\n'}
+[1.405870] (my_lite6_control) StdoutLine: {'line': b'Installing moveit2 script to /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/my_lite6_control\n'}
+[1.405933] (my_lite6_control) StdoutLine: {'line': b'Installing moveit2_action script to /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/my_lite6_control\n'}
+[1.405989] (my_lite6_control) StdoutLine: {'line': b'Installing moveit2_cartesian script to /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/my_lite6_control\n'}
+[1.406053] (my_lite6_control) StdoutLine: {'line': b'Installing moveit2_servo script to /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/my_lite6_control\n'}
+[1.406111] (my_lite6_control) StdoutLine: {'line': b'Installing moveit2_test script to /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/my_lite6_control\n'}
+[1.406167] (my_lite6_control) StdoutLine: {'line': b'Installing sequence script to /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/my_lite6_control\n'}
+[1.406311] (my_lite6_control) StdoutLine: {'line': b'Installing sequence_real script to /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/my_lite6_control\n'}
+[1.406405] (my_lite6_control) StdoutLine: {'line': b'Installing sequence_real_action script to /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/my_lite6_control\n'}
+[1.406470] (my_lite6_control) StdoutLine: {'line': b'Installing sequence_sim script to /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/my_lite6_control\n'}
+[1.406529] (my_lite6_control) StdoutLine: {'line': b'Installing sequence_sim_action script to /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/my_lite6_control\n'}
+[1.406586] (my_lite6_control) StdoutLine: {'line': b'Installing sequence_sim_action_fix script to /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/my_lite6_control\n'}
+[1.406644] (my_lite6_control) StdoutLine: {'line': b'Installing sequence_sim_custom_ik script to /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/my_lite6_control\n'}
+[1.406723] (my_lite6_control) StdoutLine: {'line': b'Installing simple_detection script to /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/my_lite6_control\n'}
+[1.406784] (my_lite6_control) StdoutLine: {'line': b'Installing target_6d_auto_real script to /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/my_lite6_control\n'}
+[1.406846] (my_lite6_control) StdoutLine: {'line': b'Installing view_joint script to /home/joon/Projects/lite6_control/git/lite6_ws/install/my_lite6_control/lib/my_lite6_control\n'}
+[1.406923] (my_lite6_control) StdoutLine: {'line': b"writing list of installed files to '/home/joon/Projects/lite6_control/git/lite6_ws/build/my_lite6_control/install.log'\n"}
+[1.447291] (my_lite6_control) CommandEnded: {'returncode': 0}
+[1.504176] (-) TimerEvent: {}
+[1.543264] (my_lite6_control) JobEnded: {'identifier': 'my_lite6_control', 'rc': 0}
+[1.544689] (-) EventReactorShutdown: {}

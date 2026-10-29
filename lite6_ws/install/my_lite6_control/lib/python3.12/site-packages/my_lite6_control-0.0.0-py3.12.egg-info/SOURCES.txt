@@ -35,6 +35,7 @@ my_lite6_control/matrix_calculator.py
 my_lite6_control/matrix_calculator_auto.py
 my_lite6_control/matrix_calculator_fix.py
 my_lite6_control/motion.py
+my_lite6_control/move_to.py
 my_lite6_control/moveit2.py
 my_lite6_control/moveit2_action.py
 my_lite6_control/moveit2_cartesian.py

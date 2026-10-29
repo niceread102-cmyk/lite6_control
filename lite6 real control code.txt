@@ -1,0 +1,25 @@
+lite6 real control code
+terminal 1
+export REPO=~/Projects/GDRNPP_bin_picking/lite6_control
+source /opt/ros/jazzy/setup.bash
+source $REPO/xarm_ros2/install/setup.bash
+source $REPO/lite6_ws/install/setup.bash
+ros2 launch xarm_moveit_config lite6_moveit_realmove_custom.launch.py robot_ip:=192.168.1.150
+
+
+terminal 2
+export REPO=~/Projects/GDRNPP_bin_picking/lite6_control
+source /opt/ros/jazzy/setup.bash
+source $REPO/xarm_ros2/install/setup.bash
+source $REPO/lite6_ws/install/setup.bash
+ros2 run my_lite6_control sequence_real_action robot.gripper.service_setup=$REPO/xarm_ros2/install/setup.bash
+
+
+terminal 3
+cd ~/Projects/GDRNPP_bin_picking/lite6_control/lite6_ws/src/
+python3 -m my_lite6_control.matrix_calculator_fix
+
+
+terminal 4
+python3 ~/Projects/GDRNPP_bin_picking/lite6_control/lite6_ws/src/my_lite6_control/my_lite6_control/ee_6d.py
+

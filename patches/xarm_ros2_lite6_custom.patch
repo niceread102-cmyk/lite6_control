@@ -1,0 +1,3102 @@
+diff --git a/uf_ros_lib/uf_ros_lib/moveit_configs_builder.py b/uf_ros_lib/uf_ros_lib/moveit_configs_builder.py
+index befa662..afbb938 100644
+--- a/uf_ros_lib/uf_ros_lib/moveit_configs_builder.py
++++ b/uf_ros_lib/uf_ros_lib/moveit_configs_builder.py
+@@ -39,6 +39,7 @@ MoveItConfigsBuilder(
+         ros2_control_plugin='uf_robot_hardware/UFRobotSystemHardware'
+         add_realsense_d435i=False
+         add_d435i_links=True
++        flip_camera_mount=False
+         model1300=False
+         attach_to='world'
+         attach_xyz='0 0 0'
+@@ -260,6 +261,7 @@ class MoveItConfigsBuilder(ParameterBuilder):
+         add_realsense_d435i = get_param_str('add_realsense_d435i', False)
+         add_d435i_links = get_param_str('add_d435i_links', True)
+         use_gazebo_camera = get_param_str('use_gazebo_camera', False)
++        flip_camera_mount = get_param_str('flip_camera_mount', False)
+         add_other_geometry = get_param_str('add_other_geometry', False)
+         geometry_type = get_param_str('geometry_type', 'box')
+         geometry_mass = get_param_str('geometry_mass', 0.1)
+@@ -308,6 +310,7 @@ class MoveItConfigsBuilder(ParameterBuilder):
+             'add_realsense_d435i': add_realsense_d435i,
+             'add_d435i_links': add_d435i_links,
+             'use_gazebo_camera': use_gazebo_camera,
++            'flip_camera_mount': flip_camera_mount,
+             'add_other_geometry': add_other_geometry,
+             'geometry_type': geometry_type,
+             'geometry_mass': geometry_mass,
+diff --git a/xarm_api/config/xarm_params.yaml b/xarm_api/config/xarm_params.yaml
+index e663933..886c811 100644
+--- a/xarm_api/config/xarm_params.yaml
++++ b/xarm_api/config/xarm_params.yaml
+@@ -29,9 +29,9 @@ ufactory_driver:
+       set_ft_sensor_zero: false       # The old name is ft_sensor_set_zero, please use the new one
+       set_linear_motor_stop: false    # The old name is set_linear_track_stop, please use the new one
+       clean_linear_motor_error: false # The old name is clean_linear_track_error, please use the new one
+-      open_lite6_gripper: false
+-      close_lite6_gripper: false
+-      stop_lite6_gripper: false
++      open_lite6_gripper: true
++      close_lite6_gripper: true
++      stop_lite6_gripper: true
+       get_state: false
+       get_cmdnum: false
+       get_vacuum_gripper: false
+diff --git a/xarm_description/urdf/camera/realsense_d435i.urdf.xacro b/xarm_description/urdf/camera/realsense_d435i.urdf.xacro
+index 288379d..4acc086 100644
+--- a/xarm_description/urdf/camera/realsense_d435i.urdf.xacro
++++ b/xarm_description/urdf/camera/realsense_d435i.urdf.xacro
+@@ -1,20 +1,28 @@
+ <?xml version="1.0"?>
+ <robot xmlns:xacro="http://ros.org/wiki/xacro">
+-  <xacro:macro name="d435i_urdf" params="prefix:='' add_d435i_links:=false">
++  <xacro:macro name="d435i_urdf" params="prefix:='' add_d435i_links:=false flip_mount:=false">
+ 
+     <!-- define property -->
+     <xacro:property name="M_PI" value="3.1415926535897931" />
+-    
++
++    <!-- flip_mount rotates only the camera mount's visual/collision mesh 180deg
++         about Z (e.g. for a wrist camera remounted upside-down); the
++         camera_link_joint/optical frame TFs below are unaffected -->
++    <xacro:property name="link_eef_rpy" value="0 0 0" />
++    <xacro:if value="${flip_mount}">
++      <xacro:property name="link_eef_rpy" value="0 0 ${M_PI}" />
++    </xacro:if>
++
+     <link name="${prefix}link_eef">
+-      <xacro:common_link_visual 
+-        mesh_filename="camera/realsense/visual/d435_with_cam_stand"  
+-        origin_xyz="0 0 0" 
+-        origin_rpy="0 0 0"
++      <xacro:common_link_visual
++        mesh_filename="camera/realsense/visual/d435_with_cam_stand"
++        origin_xyz="0 0 0"
++        origin_rpy="${link_eef_rpy}"
+         material_name="${prefix}Silver" />
+-      <xacro:common_link_collision 
+-        mesh_filename="camera/realsense/collision/d435_with_cam_stand"  
+-        origin_xyz="0 0 0" 
+-        origin_rpy="0 0 0" />
++      <xacro:common_link_collision
++        mesh_filename="camera/realsense/collision/d435_with_cam_stand"
++        origin_xyz="0 0 0"
++        origin_rpy="${link_eef_rpy}" />
+     </link>
+ 
+     <xacro:if value="${add_d435i_links}">
+diff --git a/xarm_description/urdf/gripper/gripper_macro.xacro b/xarm_description/urdf/gripper/gripper_macro.xacro
+index 24edee7..380a1dc 100644
+--- a/xarm_description/urdf/gripper/gripper_macro.xacro
++++ b/xarm_description/urdf/gripper/gripper_macro.xacro
+@@ -17,7 +17,7 @@
+ 
+     <xacro:if value="${robot_type == 'lite'}">
+       <!-- Load Lite Gripper Model URDF -->
+-      <xacro:include filename="$(find xarm_description)/urdf/gripper/uflite_gripper_macro.urdf.xacro" />
++      <xacro:include filename="$(find xarm_description)/urdf/gripper/uflite_gripper_macro.xacro" />
+       <xacro:uflite_gripper_macro prefix="${prefix}" />
+     </xacro:if>
+     <xacro:if value="${robot_type == 'bio'}">
+diff --git a/xarm_description/urdf/xarm_device.urdf.xacro b/xarm_description/urdf/xarm_device.urdf.xacro
+index 2e34d88..5ce6714 100755
+--- a/xarm_description/urdf/xarm_device.urdf.xacro
++++ b/xarm_description/urdf/xarm_device.urdf.xacro
+@@ -22,6 +22,7 @@
+   <xacro:arg name="add_realsense_d435i" default="false"/>
+   <xacro:arg name="add_d435i_links" default="true"/>
+   <xacro:arg name="use_gazebo_camera" default="false"/>
++  <xacro:arg name="flip_camera_mount" default="false"/>
+ 
+   <xacro:arg name="add_other_geometry" default="false"/>
+   <xacro:arg name="geometry_type" default="box"/>
+@@ -55,8 +56,9 @@
+     add_bio_gripper="$(arg add_bio_gripper)" dof="$(arg dof)" 
+     ros2_control_plugin="$(arg ros2_control_plugin)" robot_type="$(arg robot_type)" 
+     load_gazebo_plugin="true" ros2_control_params="$(arg ros2_control_params)"
+-    add_realsense_d435i="$(arg add_realsense_d435i)" 
+-    add_d435i_links="$(arg add_d435i_links)" 
++    add_realsense_d435i="$(arg add_realsense_d435i)"
++    add_d435i_links="$(arg add_d435i_links)"
++    flip_camera_mount="$(arg flip_camera_mount)"
+     add_other_geometry="$(arg add_other_geometry)" 
+     geometry_type="$(arg geometry_type)" geometry_mass="$(arg geometry_mass)"
+     geometry_height="$(arg geometry_height)" geometry_radius="$(arg geometry_radius)"
+diff --git a/xarm_description/urdf/xarm_device_macro.xacro b/xarm_description/urdf/xarm_device_macro.xacro
+index b8f87c8..e47741b 100644
+--- a/xarm_description/urdf/xarm_device_macro.xacro
++++ b/xarm_description/urdf/xarm_device_macro.xacro
+@@ -21,6 +21,7 @@
+     add_realsense_d435i:=false
+     add_d435i_links:=true
+     use_gazebo_camera:=false
++    flip_camera_mount:=false
+     add_other_geometry:=false 
+     geometry_type:='box'
+     geometry_mass:='0.1'
+@@ -215,7 +216,7 @@
+     <xacro:if value="${add_realsense_d435i}">
+       <!-- (xarm) Load RealSense D435i URDF -->
+       <xacro:include filename="$(find xarm_description)/urdf/camera/realsense_d435i.urdf.xacro" />
+-      <xacro:d435i_urdf prefix="${prefix}" add_d435i_links="${add_d435i_links}" />
++      <xacro:d435i_urdf prefix="${prefix}" add_d435i_links="${add_d435i_links}" flip_mount="${flip_camera_mount}" />
+       <xacro:if value="${add_d435i_links}">
+         <xacro:include filename="$(find xarm_description)/urdf/camera/realsense.gazebo.xacro" />
+         <xacro:if value="${is_ros2}">
+diff --git a/xarm_controller/config/lite_gripper_controllers.yaml b/xarm_controller/config/lite_gripper_controllers.yaml
+new file mode 100644
+index 0000000..4d12739
+--- /dev/null
++++ b/xarm_controller/config/lite_gripper_controllers.yaml
+@@ -0,0 +1,17 @@
++controller_manager:
++  ros__parameters:
++    # only for fake control
++    lite_gripper_traj_controller:
++      type: joint_trajectory_controller/JointTrajectoryController
++
++# only for fake control
++lite_gripper_traj_controller:
++  ros__parameters:
++    command_interfaces:
++      - position
++    state_interfaces:
++      - position
++      - velocity
++    joints:
++      - finger_joint1
++    interface_name: position
+diff --git a/xarm_description/urdf/lite6_complete.urdf b/xarm_description/urdf/lite6_complete.urdf
+new file mode 100644
+index 0000000..97ff1fb
+--- /dev/null
++++ b/xarm_description/urdf/lite6_complete.urdf
+@@ -0,0 +1,587 @@
++<?xml version="1.0" ?>
++<!-- =================================================================================== -->
++<!-- |    This document was autogenerated by xacro from /home/v/xarm_ros2/install/xarm_description/share/xarm_description/urdf/xarm_device.urdf.xacro | -->
++<!-- |    EDITING THIS FILE BY HAND IS NOT RECOMMENDED                                 | -->
++<!-- =================================================================================== -->
++<robot name="UF_ROBOT">
++  <!-- Insert at the beginning of xarm_device_macro.xacro -->
++  <material name="Black">
++    <color rgba="0.0 0.0 0.0 1.0"/>
++  </material>
++  <material name="Red">
++    <color rgba="0.8 0.0 0.0 1.0"/>
++  </material>
++  <material name="White">
++    <color rgba="1.0 1.0 1.0 1.0"/>
++  </material>
++  <material name="Silver">
++    <color rgba="0.753 0.753 0.753 1.0"/>
++  </material>
++  <link name="world"/>
++  <joint name="world_joint" type="fixed">
++    <parent link="world"/>
++    <child link="link_base"/>
++    <origin rpy="0 0 0" xyz="0 0 0"/>
++  </joint>
++  <ros2_control name="uf_robot_hardware/UFRobotSystemHardware" type="system">
++    <hardware>
++      <plugin>uf_robot_hardware/UFRobotSystemHardware</plugin>
++      <param name="hw_ns">xarm</param>
++      <param name="velocity_control">False</param>
++      <param name="prefix">P</param>
++      <param name="robot_ip">R</param>
++      <param name="report_type">normal</param>
++      <param name="dof">6</param>
++      <param name="baud_checkset">True</param>
++      <param name="default_gripper_baud">2000000</param>
++      <param name="robot_type">lite</param>
++      <param name="add_gripper">True</param>
++    </hardware>
++    <joint name="joint1">
++      <command_interface name="position">
++        <param name="min">-6.283185307179586</param>
++        <param name="max">6.283185307179586</param>
++      </command_interface>
++      <command_interface name="velocity">
++        <param name="min">-3.14</param>
++        <param name="max">3.14</param>
++      </command_interface>
++      <state_interface name="position"/>
++      <state_interface name="velocity"/>
++      <!-- <state_interface name="effort"/> -->
++    </joint>
++    <joint name="joint2">
++      <command_interface name="position">
++        <param name="min">-2.61799</param>
++        <param name="max">2.61799</param>
++      </command_interface>
++      <command_interface name="velocity">
++        <param name="min">-3.14</param>
++        <param name="max">3.14</param>
++      </command_interface>
++      <state_interface name="position"/>
++      <state_interface name="velocity"/>
++      <!-- <state_interface name="effort"/> -->
++    </joint>
++    <joint name="joint3">
++      <command_interface name="position">
++        <param name="min">-0.061087</param>
++        <param name="max">5.235988</param>
++      </command_interface>
++      <command_interface name="velocity">
++        <param name="min">-3.14</param>
++        <param name="max">3.14</param>
++      </command_interface>
++      <state_interface name="position"/>
++      <state_interface name="velocity"/>
++      <!-- <state_interface name="effort"/> -->
++    </joint>
++    <joint name="joint4">
++      <command_interface name="position">
++        <param name="min">-6.283185307179586</param>
++        <param name="max">6.283185307179586</param>
++      </command_interface>
++      <command_interface name="velocity">
++        <param name="min">-3.14</param>
++        <param name="max">3.14</param>
++      </command_interface>
++      <state_interface name="position"/>
++      <state_interface name="velocity"/>
++      <!-- <state_interface name="effort"/> -->
++    </joint>
++    <joint name="joint5">
++      <command_interface name="position">
++        <param name="min">-2.1642</param>
++        <param name="max">2.1642</param>
++      </command_interface>
++      <command_interface name="velocity">
++        <param name="min">-3.14</param>
++        <param name="max">3.14</param>
++      </command_interface>
++      <state_interface name="position"/>
++      <state_interface name="velocity"/>
++      <!-- <state_interface name="effort"/> -->
++    </joint>
++    <joint name="joint6">
++      <command_interface name="position">
++        <param name="min">-6.283185307179586</param>
++        <param name="max">6.283185307179586</param>
++      </command_interface>
++      <command_interface name="velocity">
++        <param name="min">-3.14</param>
++        <param name="max">3.14</param>
++      </command_interface>
++      <state_interface name="position"/>
++      <state_interface name="velocity"/>
++      <!-- <state_interface name="effort"/> -->
++    </joint>
++  </ros2_control>
++  <link name="link_base">
++    <inertial>
++      <origin rpy="0 0 0" xyz="-0.00829544579053192 3.26357432323433E-05 0.0631194584987089"/>
++      <mass value="1.65393501783165"/>
++      <inertia ixx="0" ixy="0" ixz="0" iyy="0" iyz="0" izz="0"/>
++    </inertial>
++    <visual>
++      <geometry>
++        <mesh filename="package://xarm_description/meshes/lite6/visual/link_base.stl"/>
++      </geometry>
++      <origin rpy="0 0 0" xyz="0 0 0"/>
++      <material name="White"/>
++    </visual>
++    <collision>
++      <geometry>
++        <mesh filename="package://xarm_description/meshes/lite6/collision/link_base.stl"/>
++      </geometry>
++      <origin rpy="0 0 0" xyz="0 0 0"/>
++    </collision>
++  </link>
++  <link name="link1">
++    <inertial>
++      <origin rpy="0 0 0" xyz="-0.00036 0.04195 -0.0025"/>
++      <mass value="1.411"/>
++      <inertia ixx="0.0014516400000000001" ixy="-1.24e-05" ixz="6.7e-06" iyy="0.0008872999999999999" iyz="-0.0001255" izz="0.00131993"/>
++    </inertial>
++    <visual>
++      <geometry>
++        <mesh filename="package://xarm_description/meshes/lite6/visual/link1.stl"/>
++      </geometry>
++      <origin rpy="0 0 0" xyz="0 0 0"/>
++      <material name="White"/>
++    </visual>
++    <collision>
++      <geometry>
++        <mesh filename="package://xarm_description/meshes/lite6/collision/link1.stl"/>
++      </geometry>
++      <origin rpy="0 0 0" xyz="0 0 0"/>
++    </collision>
++  </link>
++  <joint name="joint1" type="revolute">
++    <origin rpy="0 0 0" xyz="0 0 0.2435"/>
++    <parent link="link_base"/>
++    <child link="link1"/>
++    <axis xyz="0 0 1"/>
++    <limit effort="50.0" lower="-6.283185307179586" upper="6.283185307179586" velocity="3.14"/>
++    <dynamics damping="1.0" friction="1.0"/>
++  </joint>
++  <link name="link2">
++    <inertial>
++      <origin rpy="0 0 0" xyz="0.179 0.0 0.0584"/>
++      <mass value="1.34"/>
++      <inertia ixx="0.0015854" ixy="6.766e-06" ixz="0.00115136" iyy="0.0056097" iyz="-1.1399999999999999e-06" izz="0.00485"/>
++    </inertial>
++    <visual>
++      <geometry>
++        <mesh filename="package://xarm_description/meshes/lite6/visual/link2.stl"/>
++      </geometry>
++      <origin rpy="0 0 0" xyz="0 0 0"/>
++      <material name="White"/>
++    </visual>
++    <collision>
++      <geometry>
++        <mesh filename="package://xarm_description/meshes/lite6/collision/link2.stl"/>
++      </geometry>
++      <origin rpy="0 0 0" xyz="0 0 0"/>
++    </collision>
++  </link>
++  <joint name="joint2" type="revolute">
++    <origin rpy="1.5708 -1.5708 3.1416" xyz="0 0 0"/>
++    <parent link="link1"/>
++    <child link="link2"/>
++    <axis xyz="0 0 1"/>
++    <limit effort="50.0" lower="-2.61799" upper="2.61799" velocity="3.14"/>
++    <dynamics damping="1.0" friction="1.0"/>
++  </joint>
++  <link name="link3">
++    <inertial>
++      <origin rpy="0 0 0" xyz="0.072 -0.0357 -0.001"/>
++      <mass value="0.953"/>
++      <inertia ixx="0.0008861" ixy="0.00039286999999999997" ixz="-7.065999999999999e-05" iyy="0.0015784999999999998" iyz="2.4449999999999998e-05" izz="0.00184677"/>
++    </inertial>
++    <visual>
++      <geometry>
++        <mesh filename="package://xarm_description/meshes/lite6/visual/link3.stl"/>
++      </geometry>
++      <origin rpy="0 0 0" xyz="0 0 0"/>
++      <material name="White"/>
++    </visual>
++    <collision>
++      <geometry>
++        <mesh filename="package://xarm_description/meshes/lite6/collision/link3.stl"/>
++      </geometry>
++      <origin rpy="0 0 0" xyz="0 0 0"/>
++    </collision>
++  </link>
++  <joint name="joint3" type="revolute">
++    <origin rpy="-3.1416 0 1.5708" xyz="0.2002 0 0"/>
++    <parent link="link2"/>
++    <child link="link3"/>
++    <axis xyz="0 0 1"/>
++    <limit effort="32.0" lower="-0.061087" upper="5.235988" velocity="3.14"/>
++    <dynamics damping="1.0" friction="1.0"/>
++  </joint>
++  <link name="link4">
++    <inertial>
++      <origin rpy="0 0 0" xyz="-0.002 -0.0285 -0.0813"/>
++      <mass value="1.284"/>
++      <inertia ixx="0.003705" ixy="2e-06" ixz="-7.17e-06" iyy="0.0030455" iyz="0.00093188" izz="0.0015412999999999998"/>
++    </inertial>
++    <visual>
++      <geometry>
++        <mesh filename="package://xarm_description/meshes/lite6/visual/link4.stl"/>
++      </geometry>
++      <origin rpy="0 0 0" xyz="0 0 0"/>
++      <material name="White"/>
++    </visual>
++    <collision>
++      <geometry>
++        <mesh filename="package://xarm_description/meshes/lite6/collision/link4.stl"/>
++      </geometry>
++      <origin rpy="0 0 0" xyz="0 0 0"/>
++    </collision>
++  </link>
++  <joint name="joint4" type="revolute">
++    <origin rpy="1.5708 0 0" xyz="0.087 -0.22761 0"/>
++    <parent link="link3"/>
++    <child link="link4"/>
++    <axis xyz="0 0 1"/>
++    <limit effort="32.0" lower="-6.283185307179586" upper="6.283185307179586" velocity="3.14"/>
++    <dynamics damping="1.0" friction="1.0"/>
++  </joint>
++  <link name="link5">
++    <inertial>
++      <origin rpy="0 0 0" xyz="0.0 0.01 0.0019"/>
++      <mass value="0.804"/>
++      <inertia ixx="0.0005667999999999999" ixy="-6e-07" ixz="5.299999999999999e-06" iyy="0.0005076999999999999" iyz="4.8e-07" izz="0.00053"/>
++    </inertial>
++    <visual>
++      <geometry>
++        <mesh filename="package://xarm_description/meshes/lite6/visual/link5.stl"/>
++      </geometry>
++      <origin rpy="0 0 0" xyz="0 0 0"/>
++      <material name="White"/>
++    </visual>
++    <collision>
++      <geometry>
++        <mesh filename="package://xarm_description/meshes/lite6/collision/link5.stl"/>
++      </geometry>
++      <origin rpy="0 0 0" xyz="0 0 0"/>
++    </collision>
++  </link>
++  <joint name="joint5" type="revolute">
++    <origin rpy="1.5708 0 0" xyz="0 0 0"/>
++    <parent link="link4"/>
++    <child link="link5"/>
++    <axis xyz="0 0 1"/>
++    <limit effort="32.0" lower="-2.1642" upper="2.1642" velocity="3.14"/>
++    <dynamics damping="1.0" friction="1.0"/>
++  </joint>
++  <link name="link6">
++    <inertial>
++      <origin rpy="0 0 0" xyz="0.0 -0.00194 -0.0102"/>
++      <mass value="0.13"/>
++      <inertia ixx="7.726e-05" ixy="-1e-06" ixz="-4e-07" iyy="8.5665e-05" iyz="6e-07" izz="0.00014813999999999997"/>
++    </inertial>
++    <visual>
++      <geometry>
++        <mesh filename="package://xarm_description/meshes/lite6/visual/link6.stl"/>
++      </geometry>
++      <origin rpy="0 0 0" xyz="0 0 0"/>
++      <material name="Silver"/>
++    </visual>
++    <collision>
++      <geometry>
++        <mesh filename="package://xarm_description/meshes/lite6/collision/link6.stl"/>
++      </geometry>
++      <origin rpy="0 0 0" xyz="0 0 0"/>
++    </collision>
++  </link>
++  <joint name="joint6" type="revolute">
++    <origin rpy="-1.5708 0 0" xyz="0 0.0625 0"/>
++    <parent link="link5"/>
++    <child link="link6"/>
++    <axis xyz="0 0 1"/>
++    <limit effort="20.0" lower="-6.283185307179586" upper="6.283185307179586" velocity="3.14"/>
++    <dynamics damping="1.0" friction="1.0"/>
++  </joint>
++  <!-- <link name="${prefix}link_eef" />
++    <joint name="${prefix}joint_eef" type="fixed">
++      <origin xyz="0 0 0" rpy="0 0 0" />
++      <parent link="${prefix}link6" />
++      <child link="${prefix}link_eef" />
++    </joint> -->
++  <transmission name="tran1">
++    <type>transmission_interface/SimpleTransmission</type>
++    <joint name="joint1">
++      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
++    </joint>
++    <actuator name="motor1">
++      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
++      <mechanicalReduction>100</mechanicalReduction>
++    </actuator>
++  </transmission>
++  <transmission name="tran2">
++    <type>transmission_interface/SimpleTransmission</type>
++    <joint name="joint2">
++      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
++    </joint>
++    <actuator name="motor2">
++      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
++      <mechanicalReduction>100</mechanicalReduction>
++    </actuator>
++  </transmission>
++  <transmission name="tran3">
++    <type>transmission_interface/SimpleTransmission</type>
++    <joint name="joint3">
++      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
++    </joint>
++    <actuator name="motor3">
++      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
++      <mechanicalReduction>100</mechanicalReduction>
++    </actuator>
++  </transmission>
++  <transmission name="tran4">
++    <type>transmission_interface/SimpleTransmission</type>
++    <joint name="joint4">
++      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
++    </joint>
++    <actuator name="motor4">
++      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
++      <mechanicalReduction>100</mechanicalReduction>
++    </actuator>
++  </transmission>
++  <transmission name="tran5">
++    <type>transmission_interface/SimpleTransmission</type>
++    <joint name="joint5">
++      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
++    </joint>
++    <actuator name="motor5">
++      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
++      <mechanicalReduction>100</mechanicalReduction>
++    </actuator>
++  </transmission>
++  <transmission name="tran6">
++    <type>transmission_interface/SimpleTransmission</type>
++    <joint name="joint6">
++      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
++    </joint>
++    <actuator name="motor6">
++      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
++      <mechanicalReduction>100</mechanicalReduction>
++    </actuator>
++  </transmission>
++  <gazebo reference="link_base">
++    <selfCollide>true</selfCollide>
++  </gazebo>
++  <gazebo reference="link1">
++    <selfCollide>true</selfCollide>
++  </gazebo>
++  <gazebo reference="link2">
++    <selfCollide>true</selfCollide>
++  </gazebo>
++  <gazebo reference="link3">
++    <selfCollide>true</selfCollide>
++  </gazebo>
++  <gazebo reference="link4">
++    <selfCollide>true</selfCollide>
++  </gazebo>
++  <gazebo reference="link5">
++    <selfCollide>true</selfCollide>
++  </gazebo>
++  <gazebo reference="link6">
++    <selfCollide>true</selfCollide>
++  </gazebo>
++  <link name="link_eef">
++    <visual>
++      <geometry>
++        <mesh filename="package://xarm_description/meshes/camera/realsense/visual/d435_with_cam_stand.stl"/>
++      </geometry>
++      <origin rpy="0 0 3.141592653589793" xyz="0 0 0"/>
++      <material name="Silver"/>
++    </visual>
++    <collision>
++      <geometry>
++        <mesh filename="package://xarm_description/meshes/camera/realsense/collision/d435_with_cam_stand.stl"/>
++      </geometry>
++      <origin rpy="0 0 3.141592653589793" xyz="0 0 0"/>
++    </collision>
++  </link>
++  <link name="camera_link"/>
++  <link name="camera_depth_frame"/>
++  <link name="camera_depth_optical_frame"/>
++  <link name="camera_color_frame"/>
++  <link name="camera_color_optical_frame"/>
++  <link name="camera_left_ir_frame"/>
++  <link name="camera_left_ir_optical_frame"/>
++  <link name="camera_right_ir_frame"/>
++  <link name="camera_right_ir_optical_frame"/>
++  <joint name="camera_link_joint" type="fixed">
++    <parent link="link_eef"/>
++    <child link="camera_link"/>
++    <origin rpy="3.141592653589793 -1.5707963267948966 0" xyz="0.06746 -0.0175 0.0237"/>
++  </joint>
++  <joint name="camera_depth_joint" type="fixed">
++    <parent link="camera_link"/>
++    <child link="camera_depth_frame"/>
++    <origin rpy="0 0 0" xyz="0 0 0"/>
++  </joint>
++  <joint name="camera_depth_optical_joint" type="fixed">
++    <parent link="camera_depth_frame"/>
++    <child link="camera_depth_optical_frame"/>
++    <origin rpy="-1.5707963267948966 0 -1.5707963267948966" xyz="0 0 0"/>
++  </joint>
++  <joint name="camera_color_joint" type="fixed">
++    <parent link="camera_link"/>
++    <child link="camera_color_frame"/>
++    <origin rpy="0 0 0" xyz="0 0.015 0"/>
++  </joint>
++  <joint name="camera_color_optical_joint" type="fixed">
++    <parent link="camera_color_frame"/>
++    <child link="camera_color_optical_frame"/>
++    <origin rpy="-1.5707963267948966 0 -1.5707963267948966" xyz="0 0 0"/>
++  </joint>
++  <joint name="camera_left_ir_joint" type="fixed">
++    <parent link="camera_link"/>
++    <child link="camera_left_ir_frame"/>
++    <origin rpy="0 0 0" xyz="0 0 0"/>
++  </joint>
++  <joint name="camera_left_ir_optical_joint" type="fixed">
++    <parent link="camera_left_ir_frame"/>
++    <child link="camera_left_ir_optical_frame"/>
++    <origin rpy="-1.5707963267948966 0 -1.5707963267948966" xyz="0 0 0"/>
++  </joint>
++  <joint name="camera_right_ir_joint" type="fixed">
++    <parent link="camera_link"/>
++    <child link="camera_right_ir_frame"/>
++    <origin rpy="0 0 0" xyz="0 -0.050 0"/>
++  </joint>
++  <joint name="camera_right_ir_optical_joint" type="fixed">
++    <parent link="camera_right_ir_frame"/>
++    <child link="camera_right_ir_optical_frame"/>
++    <origin rpy="-1.5707963267948966 0 -1.5707963267948966" xyz="0 0 0"/>
++  </joint>
++  <joint name="joint_eef" type="fixed">
++    <origin rpy="0 0 0" xyz="0 0 0"/>
++    <parent link="link6"/>
++    <child link="link_eef"/>
++  </joint>
++  <joint name="gripper_fix" type="fixed">
++    <parent link="link_eef"/>
++    <child link="uflite_gripper_link"/>
++    <origin rpy="0 0 0" xyz="0 0 0"/>
++  </joint>
++  <link name="uflite_gripper_link">
++    <inertial>
++      <origin rpy="0 0 0" xyz="0.0 0.0 0.030"/>
++      <mass value="0.25"/>
++      <inertia ixx="0.00047106" ixy="3.9292E-07" ixz="2.6537E-06" iyy="0.00033072" iyz="-1.0975E-05" izz="0.00025642"/>
++    </inertial>
++    <visual>
++      <geometry>
++        <mesh filename="package://xarm_description/meshes/gripper/lite/visual/shell.stl"/>
++      </geometry>
++      <origin rpy="0 0 0" xyz="0 0 0"/>
++      <material name="White"/>
++    </visual>
++    <collision>
++      <geometry>
++        <mesh filename="package://xarm_description/meshes/gripper/lite/visual/shell.stl"/>
++      </geometry>
++      <origin rpy="0 0 0" xyz="0 0 0"/>
++    </collision>
++  </link>
++  <link name="uflite_finger1">
++    <inertial>
++      <origin rpy="0 0 0" xyz="0.0 0.01 0.0086"/>
++      <mass value="0.0163"/>
++      <inertia ixx="1.425E-06" ixy="0.0" ixz="0.0" iyy="1.63E-06" iyz="-3.1E-07" izz="8.63E-07"/>
++    </inertial>
++    <visual>
++      <geometry>
++        <mesh filename="package://xarm_description/meshes/gripper/lite/visual/finger1.stl"/>
++      </geometry>
++      <origin rpy="0 0 0" xyz="0 0 0"/>
++      <material name="White"/>
++    </visual>
++    <collision>
++      <geometry>
++        <mesh filename="package://xarm_description/meshes/gripper/lite/visual/finger1.stl"/>
++      </geometry>
++      <origin rpy="0 0 0" xyz="0 0 0"/>
++    </collision>
++  </link>
++  <joint name="finger_joint1" type="prismatic">
++    <origin rpy="0 0 0" xyz="0 0 0.0543"/>
++    <parent link="uflite_gripper_link"/>
++    <child link="uflite_finger1"/>
++    <axis xyz="0 1 0"/>
++    <limit effort="5" lower="0" upper="0.0089" velocity="2"/>
++  </joint>
++  <link name="uflite_finger2">
++    <inertial>
++      <origin rpy="0 0 0" xyz="0.0 -0.01 0.0086"/>
++      <mass value="0.0163"/>
++      <inertia ixx="1.425E-06" ixy="0.0" ixz="0.0" iyy="1.63E-06" iyz="3.1E-07" izz="8.63E-07"/>
++    </inertial>
++    <visual>
++      <geometry>
++        <mesh filename="package://xarm_description/meshes/gripper/lite/visual/finger2.stl"/>
++      </geometry>
++      <origin rpy="0 0 0" xyz="0 0 0"/>
++      <material name="White"/>
++    </visual>
++    <collision>
++      <geometry>
++        <mesh filename="package://xarm_description/meshes/gripper/lite/visual/finger2.stl"/>
++      </geometry>
++      <origin rpy="0 0 0" xyz="0 0 0"/>
++    </collision>
++  </link>
++  <joint name="finger_joint2" type="prismatic">
++    <origin rpy="0 0 0" xyz="0 0 0.0543"/>
++    <parent link="uflite_gripper_link"/>
++    <child link="uflite_finger2"/>
++    <axis xyz="0 -1 0"/>
++    <limit effort="5" lower="0" upper="0.0089" velocity="2"/>
++    <mimic joint="finger_joint1" multiplier="1" offset="0"/>
++  </joint>
++  <link name="link_tcp"/>
++  <joint name="joint_tcp" type="fixed">
++    <origin rpy="0 0 0" xyz="0 0 0.0836"/>
++    <parent link="uflite_gripper_link"/>
++    <child link="link_tcp"/>
++  </joint>
++  <transmission name="finger_joint1_trans">
++    <type>transmission_interface/SimpleTransmission</type>
++    <joint name="finger_joint1">
++      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
++    </joint>
++    <actuator name="finger_joint1_motor">
++      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
++      <mechanicalReduction>1</mechanicalReduction>
++    </actuator>
++  </transmission>
++  <gazebo reference="uflite_gripper_link">
++    <selfCollide>false</selfCollide>
++  </gazebo>
++  <gazebo reference="uflite_finger1">
++    <selfCollide>false</selfCollide>
++  </gazebo>
++  <gazebo reference="uflite_finger2">
++    <selfCollide>false</selfCollide>
++  </gazebo>
++  <gazebo>
++    <plugin filename="libgazebo_mimic_joint_plugin.so" name="finger_joint2mimic_joint_plugin">
++      <joint>finger_joint1</joint>
++      <mimicJoint>finger_joint2</mimicJoint>
++      <!-- if set to true, PID parameters from "/gazebo_ros_control/pid_gains/${mimic_joint}" are loaded -->
++      <hasPID/>
++      <multiplier>1.0</multiplier>
++      <offset>0</offset>
++      <sensitiveness>0.0</sensitiveness>
++      <!-- if absolute difference between setpoint and process value is below this threshold, do nothing; 0.0 = disable [rad] -->
++      <maxEffort>10.0</maxEffort>
++    </plugin>
++  </gazebo>
++  <!-- Insert at the end of xarm_device_macro.xacro -->
++</robot>
+diff --git a/xarm_description/urdf/lite6_complete_fake.urdf b/xarm_description/urdf/lite6_complete_fake.urdf
+new file mode 100644
+index 0000000..e3d1e45
+--- /dev/null
++++ b/xarm_description/urdf/lite6_complete_fake.urdf
+@@ -0,0 +1,614 @@
++<?xml version="1.0" ?>
++<!-- =================================================================================== -->
++<!-- |    This document was autogenerated by xacro from /home/v/xarm_ros2/install/xarm_description/share/xarm_description/urdf/xarm_device.urdf.xacro | -->
++<!-- |    EDITING THIS FILE BY HAND IS NOT RECOMMENDED                                 | -->
++<!-- =================================================================================== -->
++<robot name="UF_ROBOT">
++  <!-- Insert at the beginning of xarm_device_macro.xacro -->
++  <material name="Black">
++    <color rgba="0.0 0.0 0.0 1.0"/>
++  </material>
++  <material name="Red">
++    <color rgba="0.8 0.0 0.0 1.0"/>
++  </material>
++  <material name="White">
++    <color rgba="1.0 1.0 1.0 1.0"/>
++  </material>
++  <material name="Silver">
++    <color rgba="0.753 0.753 0.753 1.0"/>
++  </material>
++  <link name="world"/>
++  <joint name="world_joint" type="fixed">
++    <parent link="world"/>
++    <child link="link_base"/>
++    <origin rpy="0 0 0" xyz="0 0 0"/>
++  </joint>
++  <ros2_control name="uf_robot_hardware/UFRobotFakeSystemHardware" type="system">
++    <hardware>
++      <plugin>uf_robot_hardware/UFRobotFakeSystemHardware</plugin>
++      <param name="hw_ns">xarm</param>
++      <param name="velocity_control">False</param>
++      <param name="prefix">P</param>
++      <param name="robot_ip">R</param>
++      <param name="report_type">normal</param>
++      <param name="dof">6</param>
++      <param name="baud_checkset">True</param>
++      <param name="default_gripper_baud">2000000</param>
++      <param name="robot_type">lite</param>
++      <param name="add_gripper">True</param>
++    </hardware>
++    <joint name="joint1">
++      <command_interface name="position">
++        <param name="min">-6.283185307179586</param>
++        <param name="max">6.283185307179586</param>
++      </command_interface>
++      <command_interface name="velocity">
++        <param name="min">-3.14</param>
++        <param name="max">3.14</param>
++      </command_interface>
++      <state_interface name="position">
++        <param name="initial_value">1.0</param>
++      </state_interface>
++      <state_interface name="velocity"/>
++      <!-- <state_interface name="effort"/> -->
++    </joint>
++    <joint name="joint2">
++      <command_interface name="position">
++        <param name="min">-2.61799</param>
++        <param name="max">2.61799</param>
++      </command_interface>
++      <command_interface name="velocity">
++        <param name="min">-3.14</param>
++        <param name="max">3.14</param>
++      </command_interface>
++      <state_interface name="position">
++        <param name="initial_value">0.0</param>
++      </state_interface>
++      <state_interface name="velocity"/>
++      <!-- <state_interface name="effort"/> -->
++    </joint>
++    <joint name="joint3">
++      <command_interface name="position">
++        <param name="min">-0.061087</param>
++        <param name="max">5.235988</param>
++      </command_interface>
++      <command_interface name="velocity">
++        <param name="min">-3.14</param>
++        <param name="max">3.14</param>
++      </command_interface>
++      <state_interface name="position">
++        <param name="initial_value">1.57</param>
++      </state_interface>
++      <state_interface name="velocity"/>
++      <!-- <state_interface name="effort"/> -->
++    </joint>
++    <joint name="joint4">
++      <command_interface name="position">
++        <param name="min">-6.283185307179586</param>
++        <param name="max">6.283185307179586</param>
++      </command_interface>
++      <command_interface name="velocity">
++        <param name="min">-3.14</param>
++        <param name="max">3.14</param>
++      </command_interface>
++      <state_interface name="position">
++        <param name="initial_value">0.0</param>
++      </state_interface>
++      <state_interface name="velocity"/>
++      <!-- <state_interface name="effort"/> -->
++    </joint>
++    <joint name="joint5">
++      <command_interface name="position">
++        <param name="min">-2.1642</param>
++        <param name="max">2.1642</param>
++      </command_interface>
++      <command_interface name="velocity">
++        <param name="min">-3.14</param>
++        <param name="max">3.14</param>
++      </command_interface>
++      <state_interface name="position">
++        <param name="initial_value">1.57</param>
++      </state_interface>
++      <state_interface name="velocity"/>
++      <!-- <state_interface name="effort"/> -->
++    </joint>
++    <joint name="joint6">
++      <command_interface name="position">
++        <param name="min">-6.283185307179586</param>
++        <param name="max">6.283185307179586</param>
++      </command_interface>
++      <command_interface name="velocity">
++        <param name="min">-3.14</param>
++        <param name="max">3.14</param>
++      </command_interface>
++      <state_interface name="position">
++        <param name="initial_value">1.0</param>
++      </state_interface>
++      <state_interface name="velocity"/>
++      <!-- <state_interface name="effort"/> -->
++    </joint>
++  </ros2_control>
++  <ros2_control name="UFLiteGripperSystem" type="system">
++    <hardware>
++      <plugin>uf_robot_hardware/UFRobotFakeSystemHardware</plugin>
++    </hardware>
++    <joint name="finger_joint1">
++      <command_interface name="position">
++      </command_interface>
++      <command_interface name="velocity">
++        <param name="min">-3.14</param>
++        <param name="max">3.14</param>
++      </command_interface>
++      <state_interface name="position"/>
++      <state_interface name="velocity"/>
++    </joint>
++  </ros2_control>
++  <link name="link_base">
++    <inertial>
++      <origin rpy="0 0 0" xyz="-0.00829544579053192 3.26357432323433E-05 0.0631194584987089"/>
++      <mass value="1.65393501783165"/>
++      <inertia ixx="0" ixy="0" ixz="0" iyy="0" iyz="0" izz="0"/>
++    </inertial>
++    <visual>
++      <geometry>
++        <mesh filename="package://xarm_description/meshes/lite6/visual/link_base.stl"/>
++      </geometry>
++      <origin rpy="0 0 0" xyz="0 0 0"/>
++      <material name="White"/>
++    </visual>
++    <collision>
++      <geometry>
++        <mesh filename="package://xarm_description/meshes/lite6/collision/link_base.stl"/>
++      </geometry>
++      <origin rpy="0 0 0" xyz="0 0 0"/>
++    </collision>
++  </link>
++  <link name="link1">
++    <inertial>
++      <origin rpy="0 0 0" xyz="-0.00036 0.04195 -0.0025"/>
++      <mass value="1.411"/>
++      <inertia ixx="0.0014516400000000001" ixy="-1.24e-05" ixz="6.7e-06" iyy="0.0008872999999999999" iyz="-0.0001255" izz="0.00131993"/>
++    </inertial>
++    <visual>
++      <geometry>
++        <mesh filename="package://xarm_description/meshes/lite6/visual/link1.stl"/>
++      </geometry>
++      <origin rpy="0 0 0" xyz="0 0 0"/>
++      <material name="White"/>
++    </visual>
++    <collision>
++      <geometry>
++        <mesh filename="package://xarm_description/meshes/lite6/collision/link1.stl"/>
++      </geometry>
++      <origin rpy="0 0 0" xyz="0 0 0"/>
++    </collision>
++  </link>
++  <joint name="joint1" type="revolute">
++    <origin rpy="0 0 0" xyz="0 0 0.2435"/>
++    <parent link="link_base"/>
++    <child link="link1"/>
++    <axis xyz="0 0 1"/>
++    <limit effort="50.0" lower="-6.283185307179586" upper="6.283185307179586" velocity="3.14"/>
++    <dynamics damping="1.0" friction="1.0"/>
++  </joint>
++  <link name="link2">
++    <inertial>
++      <origin rpy="0 0 0" xyz="0.179 0.0 0.0584"/>
++      <mass value="1.34"/>
++      <inertia ixx="0.0015854" ixy="6.766e-06" ixz="0.00115136" iyy="0.0056097" iyz="-1.1399999999999999e-06" izz="0.00485"/>
++    </inertial>
++    <visual>
++      <geometry>
++        <mesh filename="package://xarm_description/meshes/lite6/visual/link2.stl"/>
++      </geometry>
++      <origin rpy="0 0 0" xyz="0 0 0"/>
++      <material name="White"/>
++    </visual>
++    <collision>
++      <geometry>
++        <mesh filename="package://xarm_description/meshes/lite6/collision/link2.stl"/>
++      </geometry>
++      <origin rpy="0 0 0" xyz="0 0 0"/>
++    </collision>
++  </link>
++  <joint name="joint2" type="revolute">
++    <origin rpy="1.5708 -1.5708 3.1416" xyz="0 0 0"/>
++    <parent link="link1"/>
++    <child link="link2"/>
++    <axis xyz="0 0 1"/>
++    <limit effort="50.0" lower="-2.61799" upper="2.61799" velocity="3.14"/>
++    <dynamics damping="1.0" friction="1.0"/>
++  </joint>
++  <link name="link3">
++    <inertial>
++      <origin rpy="0 0 0" xyz="0.072 -0.0357 -0.001"/>
++      <mass value="0.953"/>
++      <inertia ixx="0.0008861" ixy="0.00039286999999999997" ixz="-7.065999999999999e-05" iyy="0.0015784999999999998" iyz="2.4449999999999998e-05" izz="0.00184677"/>
++    </inertial>
++    <visual>
++      <geometry>
++        <mesh filename="package://xarm_description/meshes/lite6/visual/link3.stl"/>
++      </geometry>
++      <origin rpy="0 0 0" xyz="0 0 0"/>
++      <material name="White"/>
++    </visual>
++    <collision>
++      <geometry>
++        <mesh filename="package://xarm_description/meshes/lite6/collision/link3.stl"/>
++      </geometry>
++      <origin rpy="0 0 0" xyz="0 0 0"/>
++    </collision>
++  </link>
++  <joint name="joint3" type="revolute">
++    <origin rpy="-3.1416 0 1.5708" xyz="0.2002 0 0"/>
++    <parent link="link2"/>
++    <child link="link3"/>
++    <axis xyz="0 0 1"/>
++    <limit effort="32.0" lower="-0.061087" upper="5.235988" velocity="3.14"/>
++    <dynamics damping="1.0" friction="1.0"/>
++  </joint>
++  <link name="link4">
++    <inertial>
++      <origin rpy="0 0 0" xyz="-0.002 -0.0285 -0.0813"/>
++      <mass value="1.284"/>
++      <inertia ixx="0.003705" ixy="2e-06" ixz="-7.17e-06" iyy="0.0030455" iyz="0.00093188" izz="0.0015412999999999998"/>
++    </inertial>
++    <visual>
++      <geometry>
++        <mesh filename="package://xarm_description/meshes/lite6/visual/link4.stl"/>
++      </geometry>
++      <origin rpy="0 0 0" xyz="0 0 0"/>
++      <material name="White"/>
++    </visual>
++    <collision>
++      <geometry>
++        <mesh filename="package://xarm_description/meshes/lite6/collision/link4.stl"/>
++      </geometry>
++      <origin rpy="0 0 0" xyz="0 0 0"/>
++    </collision>
++  </link>
++  <joint name="joint4" type="revolute">
++    <origin rpy="1.5708 0 0" xyz="0.087 -0.22761 0"/>
++    <parent link="link3"/>
++    <child link="link4"/>
++    <axis xyz="0 0 1"/>
++    <limit effort="32.0" lower="-6.283185307179586" upper="6.283185307179586" velocity="3.14"/>
++    <dynamics damping="1.0" friction="1.0"/>
++  </joint>
++  <link name="link5">
++    <inertial>
++      <origin rpy="0 0 0" xyz="0.0 0.01 0.0019"/>
++      <mass value="0.804"/>
++      <inertia ixx="0.0005667999999999999" ixy="-6e-07" ixz="5.299999999999999e-06" iyy="0.0005076999999999999" iyz="4.8e-07" izz="0.00053"/>
++    </inertial>
++    <visual>
++      <geometry>
++        <mesh filename="package://xarm_description/meshes/lite6/visual/link5.stl"/>
++      </geometry>
++      <origin rpy="0 0 0" xyz="0 0 0"/>
++      <material name="White"/>
++    </visual>
++    <collision>
++      <geometry>
++        <mesh filename="package://xarm_description/meshes/lite6/collision/link5.stl"/>
++      </geometry>
++      <origin rpy="0 0 0" xyz="0 0 0"/>
++    </collision>
++  </link>
++  <joint name="joint5" type="revolute">
++    <origin rpy="1.5708 0 0" xyz="0 0 0"/>
++    <parent link="link4"/>
++    <child link="link5"/>
++    <axis xyz="0 0 1"/>
++    <limit effort="32.0" lower="-2.1642" upper="2.1642" velocity="3.14"/>
++    <dynamics damping="1.0" friction="1.0"/>
++  </joint>
++  <link name="link6">
++    <inertial>
++      <origin rpy="0 0 0" xyz="0.0 -0.00194 -0.0102"/>
++      <mass value="0.13"/>
++      <inertia ixx="7.726e-05" ixy="-1e-06" ixz="-4e-07" iyy="8.5665e-05" iyz="6e-07" izz="0.00014813999999999997"/>
++    </inertial>
++    <visual>
++      <geometry>
++        <mesh filename="package://xarm_description/meshes/lite6/visual/link6.stl"/>
++      </geometry>
++      <origin rpy="0 0 0" xyz="0 0 0"/>
++      <material name="Silver"/>
++    </visual>
++    <collision>
++      <geometry>
++        <mesh filename="package://xarm_description/meshes/lite6/collision/link6.stl"/>
++      </geometry>
++      <origin rpy="0 0 0" xyz="0 0 0"/>
++    </collision>
++  </link>
++  <joint name="joint6" type="revolute">
++    <origin rpy="-1.5708 0 0" xyz="0 0.0625 0"/>
++    <parent link="link5"/>
++    <child link="link6"/>
++    <axis xyz="0 0 1"/>
++    <limit effort="20.0" lower="-6.283185307179586" upper="6.283185307179586" velocity="3.14"/>
++    <dynamics damping="1.0" friction="1.0"/>
++  </joint>
++  <!-- <link name="${prefix}link_eef" />
++    <joint name="${prefix}joint_eef" type="fixed">
++      <origin xyz="0 0 0" rpy="0 0 0" />
++      <parent link="${prefix}link6" />
++      <child link="${prefix}link_eef" />
++    </joint> -->
++  <transmission name="tran1">
++    <type>transmission_interface/SimpleTransmission</type>
++    <joint name="joint1">
++      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
++    </joint>
++    <actuator name="motor1">
++      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
++      <mechanicalReduction>100</mechanicalReduction>
++    </actuator>
++  </transmission>
++  <transmission name="tran2">
++    <type>transmission_interface/SimpleTransmission</type>
++    <joint name="joint2">
++      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
++    </joint>
++    <actuator name="motor2">
++      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
++      <mechanicalReduction>100</mechanicalReduction>
++    </actuator>
++  </transmission>
++  <transmission name="tran3">
++    <type>transmission_interface/SimpleTransmission</type>
++    <joint name="joint3">
++      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
++    </joint>
++    <actuator name="motor3">
++      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
++      <mechanicalReduction>100</mechanicalReduction>
++    </actuator>
++  </transmission>
++  <transmission name="tran4">
++    <type>transmission_interface/SimpleTransmission</type>
++    <joint name="joint4">
++      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
++    </joint>
++    <actuator name="motor4">
++      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
++      <mechanicalReduction>100</mechanicalReduction>
++    </actuator>
++  </transmission>
++  <transmission name="tran5">
++    <type>transmission_interface/SimpleTransmission</type>
++    <joint name="joint5">
++      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
++    </joint>
++    <actuator name="motor5">
++      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
++      <mechanicalReduction>100</mechanicalReduction>
++    </actuator>
++  </transmission>
++  <transmission name="tran6">
++    <type>transmission_interface/SimpleTransmission</type>
++    <joint name="joint6">
++      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
++    </joint>
++    <actuator name="motor6">
++      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
++      <mechanicalReduction>100</mechanicalReduction>
++    </actuator>
++  </transmission>
++  <gazebo reference="link_base">
++    <selfCollide>true</selfCollide>
++  </gazebo>
++  <gazebo reference="link1">
++    <selfCollide>true</selfCollide>
++  </gazebo>
++  <gazebo reference="link2">
++    <selfCollide>true</selfCollide>
++  </gazebo>
++  <gazebo reference="link3">
++    <selfCollide>true</selfCollide>
++  </gazebo>
++  <gazebo reference="link4">
++    <selfCollide>true</selfCollide>
++  </gazebo>
++  <gazebo reference="link5">
++    <selfCollide>true</selfCollide>
++  </gazebo>
++  <gazebo reference="link6">
++    <selfCollide>true</selfCollide>
++  </gazebo>
++  <link name="link_eef">
++    <visual>
++      <geometry>
++        <mesh filename="package://xarm_description/meshes/camera/realsense/visual/d435_with_cam_stand.stl"/>
++      </geometry>
++      <origin rpy="0 0 3.141592653589793" xyz="0 0 0"/>
++      <material name="Silver"/>
++    </visual>
++    <collision>
++      <geometry>
++        <mesh filename="package://xarm_description/meshes/camera/realsense/collision/d435_with_cam_stand.stl"/>
++      </geometry>
++      <origin rpy="0 0 3.141592653589793" xyz="0 0 0"/>
++    </collision>
++  </link>
++  <link name="camera_link"/>
++  <link name="camera_depth_frame"/>
++  <link name="camera_depth_optical_frame"/>
++  <link name="camera_color_frame"/>
++  <link name="camera_color_optical_frame"/>
++  <link name="camera_left_ir_frame"/>
++  <link name="camera_left_ir_optical_frame"/>
++  <link name="camera_right_ir_frame"/>
++  <link name="camera_right_ir_optical_frame"/>
++  <joint name="camera_link_joint" type="fixed">
++    <parent link="link_eef"/>
++    <child link="camera_link"/>
++    <origin rpy="3.141592653589793 -1.5707963267948966 0" xyz="0.06746 -0.0175 0.0237"/>
++  </joint>
++  <joint name="camera_depth_joint" type="fixed">
++    <parent link="camera_link"/>
++    <child link="camera_depth_frame"/>
++    <origin rpy="0 0 0" xyz="0 0 0"/>
++  </joint>
++  <joint name="camera_depth_optical_joint" type="fixed">
++    <parent link="camera_depth_frame"/>
++    <child link="camera_depth_optical_frame"/>
++    <origin rpy="-1.5707963267948966 0 -1.5707963267948966" xyz="0 0 0"/>
++  </joint>
++  <joint name="camera_color_joint" type="fixed">
++    <parent link="camera_link"/>
++    <child link="camera_color_frame"/>
++    <origin rpy="0 0 0" xyz="0 0.015 0"/>
++  </joint>
++  <joint name="camera_color_optical_joint" type="fixed">
++    <parent link="camera_color_frame"/>
++    <child link="camera_color_optical_frame"/>
++    <origin rpy="-1.5707963267948966 0 -1.5707963267948966" xyz="0 0 0"/>
++  </joint>
++  <joint name="camera_left_ir_joint" type="fixed">
++    <parent link="camera_link"/>
++    <child link="camera_left_ir_frame"/>
++    <origin rpy="0 0 0" xyz="0 0 0"/>
++  </joint>
++  <joint name="camera_left_ir_optical_joint" type="fixed">
++    <parent link="camera_left_ir_frame"/>
++    <child link="camera_left_ir_optical_frame"/>
++    <origin rpy="-1.5707963267948966 0 -1.5707963267948966" xyz="0 0 0"/>
++  </joint>
++  <joint name="camera_right_ir_joint" type="fixed">
++    <parent link="camera_link"/>
++    <child link="camera_right_ir_frame"/>
++    <origin rpy="0 0 0" xyz="0 -0.050 0"/>
++  </joint>
++  <joint name="camera_right_ir_optical_joint" type="fixed">
++    <parent link="camera_right_ir_frame"/>
++    <child link="camera_right_ir_optical_frame"/>
++    <origin rpy="-1.5707963267948966 0 -1.5707963267948966" xyz="0 0 0"/>
++  </joint>
++  <joint name="joint_eef" type="fixed">
++    <origin rpy="0 0 0" xyz="0 0 0"/>
++    <parent link="link6"/>
++    <child link="link_eef"/>
++  </joint>
++  <joint name="gripper_fix" type="fixed">
++    <parent link="link_eef"/>
++    <child link="uflite_gripper_link"/>
++    <origin rpy="0 0 0" xyz="0 0 0"/>
++  </joint>
++  <link name="uflite_gripper_link">
++    <inertial>
++      <origin rpy="0 0 0" xyz="0.0 0.0 0.030"/>
++      <mass value="0.25"/>
++      <inertia ixx="0.00047106" ixy="3.9292E-07" ixz="2.6537E-06" iyy="0.00033072" iyz="-1.0975E-05" izz="0.00025642"/>
++    </inertial>
++    <visual>
++      <geometry>
++        <mesh filename="package://xarm_description/meshes/gripper/lite/visual/shell.stl"/>
++      </geometry>
++      <origin rpy="0 0 0" xyz="0 0 0"/>
++      <material name="White"/>
++    </visual>
++    <collision>
++      <geometry>
++        <mesh filename="package://xarm_description/meshes/gripper/lite/visual/shell.stl"/>
++      </geometry>
++      <origin rpy="0 0 0" xyz="0 0 0"/>
++    </collision>
++  </link>
++  <link name="uflite_finger1">
++    <inertial>
++      <origin rpy="0 0 0" xyz="0.0 0.01 0.0086"/>
++      <mass value="0.0163"/>
++      <inertia ixx="1.425E-06" ixy="0.0" ixz="0.0" iyy="1.63E-06" iyz="-3.1E-07" izz="8.63E-07"/>
++    </inertial>
++    <visual>
++      <geometry>
++        <mesh filename="package://xarm_description/meshes/gripper/lite/visual/finger1.stl"/>
++      </geometry>
++      <origin rpy="0 0 0" xyz="0 0 0"/>
++      <material name="White"/>
++    </visual>
++    <collision>
++      <geometry>
++        <mesh filename="package://xarm_description/meshes/gripper/lite/visual/finger1.stl"/>
++      </geometry>
++      <origin rpy="0 0 0" xyz="0 0 0"/>
++    </collision>
++  </link>
++  <joint name="finger_joint1" type="prismatic">
++    <origin rpy="0 0 0" xyz="0 0 0.0543"/>
++    <parent link="uflite_gripper_link"/>
++    <child link="uflite_finger1"/>
++    <axis xyz="0 1 0"/>
++    <limit effort="5" lower="0" upper="0.0089" velocity="2"/>
++  </joint>
++  <link name="uflite_finger2">
++    <inertial>
++      <origin rpy="0 0 0" xyz="0.0 -0.01 0.0086"/>
++      <mass value="0.0163"/>
++      <inertia ixx="1.425E-06" ixy="0.0" ixz="0.0" iyy="1.63E-06" iyz="3.1E-07" izz="8.63E-07"/>
++    </inertial>
++    <visual>
++      <geometry>
++        <mesh filename="package://xarm_description/meshes/gripper/lite/visual/finger2.stl"/>
++      </geometry>
++      <origin rpy="0 0 0" xyz="0 0 0"/>
++      <material name="White"/>
++    </visual>
++    <collision>
++      <geometry>
++        <mesh filename="package://xarm_description/meshes/gripper/lite/visual/finger2.stl"/>
++      </geometry>
++      <origin rpy="0 0 0" xyz="0 0 0"/>
++    </collision>
++  </link>
++  <joint name="finger_joint2" type="prismatic">
++    <origin rpy="0 0 0" xyz="0 0 0.0543"/>
++    <parent link="uflite_gripper_link"/>
++    <child link="uflite_finger2"/>
++    <axis xyz="0 -1 0"/>
++    <limit effort="5" lower="0" upper="0.0089" velocity="2"/>
++    <mimic joint="finger_joint1" multiplier="1" offset="0"/>
++  </joint>
++  <link name="link_tcp"/>
++  <joint name="joint_tcp" type="fixed">
++    <origin rpy="0 0 0" xyz="0 0 0.0836"/>
++    <parent link="uflite_gripper_link"/>
++    <child link="link_tcp"/>
++  </joint>
++  <transmission name="finger_joint1_trans">
++    <type>transmission_interface/SimpleTransmission</type>
++    <joint name="finger_joint1">
++      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
++    </joint>
++    <actuator name="finger_joint1_motor">
++      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
++      <mechanicalReduction>1</mechanicalReduction>
++    </actuator>
++  </transmission>
++  <gazebo reference="uflite_gripper_link">
++    <selfCollide>false</selfCollide>
++  </gazebo>
++  <gazebo reference="uflite_finger1">
++    <selfCollide>false</selfCollide>
++  </gazebo>
++  <gazebo reference="uflite_finger2">
++    <selfCollide>false</selfCollide>
++  </gazebo>
++  <gazebo>
++    <plugin filename="libgazebo_mimic_joint_plugin.so" name="finger_joint2mimic_joint_plugin">
++      <joint>finger_joint1</joint>
++      <mimicJoint>finger_joint2</mimicJoint>
++      <!-- if set to true, PID parameters from "/gazebo_ros_control/pid_gains/${mimic_joint}" are loaded -->
++      <hasPID/>
++      <multiplier>1.0</multiplier>
++      <offset>0</offset>
++      <sensitiveness>0.0</sensitiveness>
++      <!-- if absolute difference between setpoint and process value is below this threshold, do nothing; 0.0 = disable [rad] -->
++      <maxEffort>10.0</maxEffort>
++    </plugin>
++  </gazebo>
++  <!-- Insert at the end of xarm_device_macro.xacro -->
++</robot>
+diff --git a/xarm_description/urdf/lite6_complete_original.urdf b/xarm_description/urdf/lite6_complete_original.urdf
+new file mode 100644
+index 0000000..4155c31
+--- /dev/null
++++ b/xarm_description/urdf/lite6_complete_original.urdf
+@@ -0,0 +1,587 @@
++<?xml version="1.0" ?>
++<!-- =================================================================================== -->
++<!-- |    This document was autogenerated by xacro from /home/v/xarm_ros2/install/xarm_description/share/xarm_description/urdf/xarm_device.urdf.xacro | -->
++<!-- |    EDITING THIS FILE BY HAND IS NOT RECOMMENDED                                 | -->
++<!-- =================================================================================== -->
++<robot name="UF_ROBOT">
++  <!-- Insert at the beginning of xarm_device_macro.xacro -->
++  <material name="Black">
++    <color rgba="0.0 0.0 0.0 1.0"/>
++  </material>
++  <material name="Red">
++    <color rgba="0.8 0.0 0.0 1.0"/>
++  </material>
++  <material name="White">
++    <color rgba="1.0 1.0 1.0 1.0"/>
++  </material>
++  <material name="Silver">
++    <color rgba="0.753 0.753 0.753 1.0"/>
++  </material>
++  <link name="world"/>
++  <joint name="world_joint" type="fixed">
++    <parent link="world"/>
++    <child link="link_base"/>
++    <origin rpy="0 0 0" xyz="0 0 0"/>
++  </joint>
++  <ros2_control name="uf_robot_hardware/UFRobotSystemHardware" type="system">
++    <hardware>
++      <plugin>uf_robot_hardware/UFRobotSystemHardware</plugin>
++      <param name="hw_ns">xarm</param>
++      <param name="velocity_control">False</param>
++      <param name="prefix">P</param>
++      <param name="robot_ip">R</param>
++      <param name="report_type">normal</param>
++      <param name="dof">6</param>
++      <param name="baud_checkset">True</param>
++      <param name="default_gripper_baud">2000000</param>
++      <param name="robot_type">lite</param>
++      <param name="add_gripper">True</param>
++    </hardware>
++    <joint name="joint1">
++      <command_interface name="position">
++        <param name="min">-6.283185307179586</param>
++        <param name="max">6.283185307179586</param>
++      </command_interface>
++      <command_interface name="velocity">
++        <param name="min">-3.14</param>
++        <param name="max">3.14</param>
++      </command_interface>
++      <state_interface name="position"/>
++      <state_interface name="velocity"/>
++      <!-- <state_interface name="effort"/> -->
++    </joint>
++    <joint name="joint2">
++      <command_interface name="position">
++        <param name="min">-2.61799</param>
++        <param name="max">2.61799</param>
++      </command_interface>
++      <command_interface name="velocity">
++        <param name="min">-3.14</param>
++        <param name="max">3.14</param>
++      </command_interface>
++      <state_interface name="position"/>
++      <state_interface name="velocity"/>
++      <!-- <state_interface name="effort"/> -->
++    </joint>
++    <joint name="joint3">
++      <command_interface name="position">
++        <param name="min">-0.061087</param>
++        <param name="max">5.235988</param>
++      </command_interface>
++      <command_interface name="velocity">
++        <param name="min">-3.14</param>
++        <param name="max">3.14</param>
++      </command_interface>
++      <state_interface name="position"/>
++      <state_interface name="velocity"/>
++      <!-- <state_interface name="effort"/> -->
++    </joint>
++    <joint name="joint4">
++      <command_interface name="position">
++        <param name="min">-6.283185307179586</param>
++        <param name="max">6.283185307179586</param>
++      </command_interface>
++      <command_interface name="velocity">
++        <param name="min">-3.14</param>
++        <param name="max">3.14</param>
++      </command_interface>
++      <state_interface name="position"/>
++      <state_interface name="velocity"/>
++      <!-- <state_interface name="effort"/> -->
++    </joint>
++    <joint name="joint5">
++      <command_interface name="position">
++        <param name="min">-2.1642</param>
++        <param name="max">2.1642</param>
++      </command_interface>
++      <command_interface name="velocity">
++        <param name="min">-3.14</param>
++        <param name="max">3.14</param>
++      </command_interface>
++      <state_interface name="position"/>
++      <state_interface name="velocity"/>
++      <!-- <state_interface name="effort"/> -->
++    </joint>
++    <joint name="joint6">
++      <command_interface name="position">
++        <param name="min">-6.283185307179586</param>
++        <param name="max">6.283185307179586</param>
++      </command_interface>
++      <command_interface name="velocity">
++        <param name="min">-3.14</param>
++        <param name="max">3.14</param>
++      </command_interface>
++      <state_interface name="position"/>
++      <state_interface name="velocity"/>
++      <!-- <state_interface name="effort"/> -->
++    </joint>
++  </ros2_control>
++  <link name="link_base">
++    <inertial>
++      <origin rpy="0 0 0" xyz="-0.00829544579053192 3.26357432323433E-05 0.0631194584987089"/>
++      <mass value="1.65393501783165"/>
++      <inertia ixx="0" ixy="0" ixz="0" iyy="0" iyz="0" izz="0"/>
++    </inertial>
++    <visual>
++      <geometry>
++        <mesh filename="package://xarm_description/meshes/lite6/visual/link_base.stl"/>
++      </geometry>
++      <origin rpy="0 0 0" xyz="0 0 0"/>
++      <material name="White"/>
++    </visual>
++    <collision>
++      <geometry>
++        <mesh filename="package://xarm_description/meshes/lite6/collision/link_base.stl"/>
++      </geometry>
++      <origin rpy="0 0 0" xyz="0 0 0"/>
++    </collision>
++  </link>
++  <link name="link1">
++    <inertial>
++      <origin rpy="0 0 0" xyz="-0.00036 0.04195 -0.0025"/>
++      <mass value="1.411"/>
++      <inertia ixx="0.0014516400000000001" ixy="-1.24e-05" ixz="6.7e-06" iyy="0.0008872999999999999" iyz="-0.0001255" izz="0.00131993"/>
++    </inertial>
++    <visual>
++      <geometry>
++        <mesh filename="package://xarm_description/meshes/lite6/visual/link1.stl"/>
++      </geometry>
++      <origin rpy="0 0 0" xyz="0 0 0"/>
++      <material name="White"/>
++    </visual>
++    <collision>
++      <geometry>
++        <mesh filename="package://xarm_description/meshes/lite6/collision/link1.stl"/>
++      </geometry>
++      <origin rpy="0 0 0" xyz="0 0 0"/>
++    </collision>
++  </link>
++  <joint name="joint1" type="revolute">
++    <origin rpy="0 0 0" xyz="0 0 0.2435"/>
++    <parent link="link_base"/>
++    <child link="link1"/>
++    <axis xyz="0 0 1"/>
++    <limit effort="50.0" lower="-6.283185307179586" upper="6.283185307179586" velocity="3.14"/>
++    <dynamics damping="1.0" friction="1.0"/>
++  </joint>
++  <link name="link2">
++    <inertial>
++      <origin rpy="0 0 0" xyz="0.179 0.0 0.0584"/>
++      <mass value="1.34"/>
++      <inertia ixx="0.0015854" ixy="6.766e-06" ixz="0.00115136" iyy="0.0056097" iyz="-1.1399999999999999e-06" izz="0.00485"/>
++    </inertial>
++    <visual>
++      <geometry>
++        <mesh filename="package://xarm_description/meshes/lite6/visual/link2.stl"/>
++      </geometry>
++      <origin rpy="0 0 0" xyz="0 0 0"/>
++      <material name="White"/>
++    </visual>
++    <collision>
++      <geometry>
++        <mesh filename="package://xarm_description/meshes/lite6/collision/link2.stl"/>
++      </geometry>
++      <origin rpy="0 0 0" xyz="0 0 0"/>
++    </collision>
++  </link>
++  <joint name="joint2" type="revolute">
++    <origin rpy="1.5708 -1.5708 3.1416" xyz="0 0 0"/>
++    <parent link="link1"/>
++    <child link="link2"/>
++    <axis xyz="0 0 1"/>
++    <limit effort="50.0" lower="-2.61799" upper="2.61799" velocity="3.14"/>
++    <dynamics damping="1.0" friction="1.0"/>
++  </joint>
++  <link name="link3">
++    <inertial>
++      <origin rpy="0 0 0" xyz="0.072 -0.0357 -0.001"/>
++      <mass value="0.953"/>
++      <inertia ixx="0.0008861" ixy="0.00039286999999999997" ixz="-7.065999999999999e-05" iyy="0.0015784999999999998" iyz="2.4449999999999998e-05" izz="0.00184677"/>
++    </inertial>
++    <visual>
++      <geometry>
++        <mesh filename="package://xarm_description/meshes/lite6/visual/link3.stl"/>
++      </geometry>
++      <origin rpy="0 0 0" xyz="0 0 0"/>
++      <material name="White"/>
++    </visual>
++    <collision>
++      <geometry>
++        <mesh filename="package://xarm_description/meshes/lite6/collision/link3.stl"/>
++      </geometry>
++      <origin rpy="0 0 0" xyz="0 0 0"/>
++    </collision>
++  </link>
++  <joint name="joint3" type="revolute">
++    <origin rpy="-3.1416 0 1.5708" xyz="0.2002 0 0"/>
++    <parent link="link2"/>
++    <child link="link3"/>
++    <axis xyz="0 0 1"/>
++    <limit effort="32.0" lower="-0.061087" upper="5.235988" velocity="3.14"/>
++    <dynamics damping="1.0" friction="1.0"/>
++  </joint>
++  <link name="link4">
++    <inertial>
++      <origin rpy="0 0 0" xyz="-0.002 -0.0285 -0.0813"/>
++      <mass value="1.284"/>
++      <inertia ixx="0.003705" ixy="2e-06" ixz="-7.17e-06" iyy="0.0030455" iyz="0.00093188" izz="0.0015412999999999998"/>
++    </inertial>
++    <visual>
++      <geometry>
++        <mesh filename="package://xarm_description/meshes/lite6/visual/link4.stl"/>
++      </geometry>
++      <origin rpy="0 0 0" xyz="0 0 0"/>
++      <material name="White"/>
++    </visual>
++    <collision>
++      <geometry>
++        <mesh filename="package://xarm_description/meshes/lite6/collision/link4.stl"/>
++      </geometry>
++      <origin rpy="0 0 0" xyz="0 0 0"/>
++    </collision>
++  </link>
++  <joint name="joint4" type="revolute">
++    <origin rpy="1.5708 0 0" xyz="0.087 -0.22761 0"/>
++    <parent link="link3"/>
++    <child link="link4"/>
++    <axis xyz="0 0 1"/>
++    <limit effort="32.0" lower="-6.283185307179586" upper="6.283185307179586" velocity="3.14"/>
++    <dynamics damping="1.0" friction="1.0"/>
++  </joint>
++  <link name="link5">
++    <inertial>
++      <origin rpy="0 0 0" xyz="0.0 0.01 0.0019"/>
++      <mass value="0.804"/>
++      <inertia ixx="0.0005667999999999999" ixy="-6e-07" ixz="5.299999999999999e-06" iyy="0.0005076999999999999" iyz="4.8e-07" izz="0.00053"/>
++    </inertial>
++    <visual>
++      <geometry>
++        <mesh filename="package://xarm_description/meshes/lite6/visual/link5.stl"/>
++      </geometry>
++      <origin rpy="0 0 0" xyz="0 0 0"/>
++      <material name="White"/>
++    </visual>
++    <collision>
++      <geometry>
++        <mesh filename="package://xarm_description/meshes/lite6/collision/link5.stl"/>
++      </geometry>
++      <origin rpy="0 0 0" xyz="0 0 0"/>
++    </collision>
++  </link>
++  <joint name="joint5" type="revolute">
++    <origin rpy="1.5708 0 0" xyz="0 0 0"/>
++    <parent link="link4"/>
++    <child link="link5"/>
++    <axis xyz="0 0 1"/>
++    <limit effort="32.0" lower="-2.1642" upper="2.1642" velocity="3.14"/>
++    <dynamics damping="1.0" friction="1.0"/>
++  </joint>
++  <link name="link6">
++    <inertial>
++      <origin rpy="0 0 0" xyz="0.0 -0.00194 -0.0102"/>
++      <mass value="0.13"/>
++      <inertia ixx="7.726e-05" ixy="-1e-06" ixz="-4e-07" iyy="8.5665e-05" iyz="6e-07" izz="0.00014813999999999997"/>
++    </inertial>
++    <visual>
++      <geometry>
++        <mesh filename="package://xarm_description/meshes/lite6/visual/link6.stl"/>
++      </geometry>
++      <origin rpy="0 0 0" xyz="0 0 0"/>
++      <material name="Silver"/>
++    </visual>
++    <collision>
++      <geometry>
++        <mesh filename="package://xarm_description/meshes/lite6/collision/link6.stl"/>
++      </geometry>
++      <origin rpy="0 0 0" xyz="0 0 0"/>
++    </collision>
++  </link>
++  <joint name="joint6" type="revolute">
++    <origin rpy="-1.5708 0 0" xyz="0 0.0625 0"/>
++    <parent link="link5"/>
++    <child link="link6"/>
++    <axis xyz="0 0 1"/>
++    <limit effort="20.0" lower="-6.283185307179586" upper="6.283185307179586" velocity="3.14"/>
++    <dynamics damping="1.0" friction="1.0"/>
++  </joint>
++  <!-- <link name="${prefix}link_eef" />
++    <joint name="${prefix}joint_eef" type="fixed">
++      <origin xyz="0 0 0" rpy="0 0 0" />
++      <parent link="${prefix}link6" />
++      <child link="${prefix}link_eef" />
++    </joint> -->
++  <transmission name="tran1">
++    <type>transmission_interface/SimpleTransmission</type>
++    <joint name="joint1">
++      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
++    </joint>
++    <actuator name="motor1">
++      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
++      <mechanicalReduction>100</mechanicalReduction>
++    </actuator>
++  </transmission>
++  <transmission name="tran2">
++    <type>transmission_interface/SimpleTransmission</type>
++    <joint name="joint2">
++      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
++    </joint>
++    <actuator name="motor2">
++      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
++      <mechanicalReduction>100</mechanicalReduction>
++    </actuator>
++  </transmission>
++  <transmission name="tran3">
++    <type>transmission_interface/SimpleTransmission</type>
++    <joint name="joint3">
++      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
++    </joint>
++    <actuator name="motor3">
++      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
++      <mechanicalReduction>100</mechanicalReduction>
++    </actuator>
++  </transmission>
++  <transmission name="tran4">
++    <type>transmission_interface/SimpleTransmission</type>
++    <joint name="joint4">
++      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
++    </joint>
++    <actuator name="motor4">
++      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
++      <mechanicalReduction>100</mechanicalReduction>
++    </actuator>
++  </transmission>
++  <transmission name="tran5">
++    <type>transmission_interface/SimpleTransmission</type>
++    <joint name="joint5">
++      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
++    </joint>
++    <actuator name="motor5">
++      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
++      <mechanicalReduction>100</mechanicalReduction>
++    </actuator>
++  </transmission>
++  <transmission name="tran6">
++    <type>transmission_interface/SimpleTransmission</type>
++    <joint name="joint6">
++      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
++    </joint>
++    <actuator name="motor6">
++      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
++      <mechanicalReduction>100</mechanicalReduction>
++    </actuator>
++  </transmission>
++  <gazebo reference="link_base">
++    <selfCollide>true</selfCollide>
++  </gazebo>
++  <gazebo reference="link1">
++    <selfCollide>true</selfCollide>
++  </gazebo>
++  <gazebo reference="link2">
++    <selfCollide>true</selfCollide>
++  </gazebo>
++  <gazebo reference="link3">
++    <selfCollide>true</selfCollide>
++  </gazebo>
++  <gazebo reference="link4">
++    <selfCollide>true</selfCollide>
++  </gazebo>
++  <gazebo reference="link5">
++    <selfCollide>true</selfCollide>
++  </gazebo>
++  <gazebo reference="link6">
++    <selfCollide>true</selfCollide>
++  </gazebo>
++  <link name="link_eef">
++    <visual>
++      <geometry>
++        <mesh filename="package://xarm_description/meshes/camera/realsense/visual/d435_with_cam_stand.stl"/>
++      </geometry>
++      <origin rpy="0 0 0" xyz="0 0 0"/>
++      <material name="Silver"/>
++    </visual>
++    <collision>
++      <geometry>
++        <mesh filename="package://xarm_description/meshes/camera/realsense/collision/d435_with_cam_stand.stl"/>
++      </geometry>
++      <origin rpy="0 0 0" xyz="0 0 0"/>
++    </collision>
++  </link>
++  <link name="camera_link"/>
++  <link name="camera_depth_frame"/>
++  <link name="camera_depth_optical_frame"/>
++  <link name="camera_color_frame"/>
++  <link name="camera_color_optical_frame"/>
++  <link name="camera_left_ir_frame"/>
++  <link name="camera_left_ir_optical_frame"/>
++  <link name="camera_right_ir_frame"/>
++  <link name="camera_right_ir_optical_frame"/>
++  <joint name="camera_link_joint" type="fixed">
++    <parent link="link_eef"/>
++    <child link="camera_link"/>
++    <origin rpy="3.141592653589793 -1.5707963267948966 0" xyz="0.06746 -0.0175 0.0237"/>
++  </joint>
++  <joint name="camera_depth_joint" type="fixed">
++    <parent link="camera_link"/>
++    <child link="camera_depth_frame"/>
++    <origin rpy="0 0 0" xyz="0 0 0"/>
++  </joint>
++  <joint name="camera_depth_optical_joint" type="fixed">
++    <parent link="camera_depth_frame"/>
++    <child link="camera_depth_optical_frame"/>
++    <origin rpy="-1.5707963267948966 0 -1.5707963267948966" xyz="0 0 0"/>
++  </joint>
++  <joint name="camera_color_joint" type="fixed">
++    <parent link="camera_link"/>
++    <child link="camera_color_frame"/>
++    <origin rpy="0 0 0" xyz="0 0.015 0"/>
++  </joint>
++  <joint name="camera_color_optical_joint" type="fixed">
++    <parent link="camera_color_frame"/>
++    <child link="camera_color_optical_frame"/>
++    <origin rpy="-1.5707963267948966 0 -1.5707963267948966" xyz="0 0 0"/>
++  </joint>
++  <joint name="camera_left_ir_joint" type="fixed">
++    <parent link="camera_link"/>
++    <child link="camera_left_ir_frame"/>
++    <origin rpy="0 0 0" xyz="0 0 0"/>
++  </joint>
++  <joint name="camera_left_ir_optical_joint" type="fixed">
++    <parent link="camera_left_ir_frame"/>
++    <child link="camera_left_ir_optical_frame"/>
++    <origin rpy="-1.5707963267948966 0 -1.5707963267948966" xyz="0 0 0"/>
++  </joint>
++  <joint name="camera_right_ir_joint" type="fixed">
++    <parent link="camera_link"/>
++    <child link="camera_right_ir_frame"/>
++    <origin rpy="0 0 0" xyz="0 -0.050 0"/>
++  </joint>
++  <joint name="camera_right_ir_optical_joint" type="fixed">
++    <parent link="camera_right_ir_frame"/>
++    <child link="camera_right_ir_optical_frame"/>
++    <origin rpy="-1.5707963267948966 0 -1.5707963267948966" xyz="0 0 0"/>
++  </joint>
++  <joint name="joint_eef" type="fixed">
++    <origin rpy="0 0 0" xyz="0 0 0"/>
++    <parent link="link6"/>
++    <child link="link_eef"/>
++  </joint>
++  <joint name="gripper_fix" type="fixed">
++    <parent link="link_eef"/>
++    <child link="uflite_gripper_link"/>
++    <origin rpy="0 0 0" xyz="0 0 0"/>
++  </joint>
++  <link name="uflite_gripper_link">
++    <inertial>
++      <origin rpy="0 0 0" xyz="0.0 0.0 0.030"/>
++      <mass value="0.25"/>
++      <inertia ixx="0.00047106" ixy="3.9292E-07" ixz="2.6537E-06" iyy="0.00033072" iyz="-1.0975E-05" izz="0.00025642"/>
++    </inertial>
++    <visual>
++      <geometry>
++        <mesh filename="package://xarm_description/meshes/gripper/lite/visual/shell.stl"/>
++      </geometry>
++      <origin rpy="0 0 0" xyz="0 0 0"/>
++      <material name="White"/>
++    </visual>
++    <collision>
++      <geometry>
++        <mesh filename="package://xarm_description/meshes/gripper/lite/visual/shell.stl"/>
++      </geometry>
++      <origin rpy="0 0 0" xyz="0 0 0"/>
++    </collision>
++  </link>
++  <link name="uflite_finger1">
++    <inertial>
++      <origin rpy="0 0 0" xyz="0.0 0.01 0.0086"/>
++      <mass value="0.0163"/>
++      <inertia ixx="1.425E-06" ixy="0.0" ixz="0.0" iyy="1.63E-06" iyz="-3.1E-07" izz="8.63E-07"/>
++    </inertial>
++    <visual>
++      <geometry>
++        <mesh filename="package://xarm_description/meshes/gripper/lite/visual/finger1.stl"/>
++      </geometry>
++      <origin rpy="0 0 0" xyz="0 0 0"/>
++      <material name="White"/>
++    </visual>
++    <collision>
++      <geometry>
++        <mesh filename="package://xarm_description/meshes/gripper/lite/visual/finger1.stl"/>
++      </geometry>
++      <origin rpy="0 0 0" xyz="0 0 0"/>
++    </collision>
++  </link>
++  <joint name="finger_joint1" type="prismatic">
++    <origin rpy="0 0 0" xyz="0 0 0.0543"/>
++    <parent link="uflite_gripper_link"/>
++    <child link="uflite_finger1"/>
++    <axis xyz="0 1 0"/>
++    <limit effort="5" lower="0" upper="0.0089" velocity="2"/>
++  </joint>
++  <link name="uflite_finger2">
++    <inertial>
++      <origin rpy="0 0 0" xyz="0.0 -0.01 0.0086"/>
++      <mass value="0.0163"/>
++      <inertia ixx="1.425E-06" ixy="0.0" ixz="0.0" iyy="1.63E-06" iyz="3.1E-07" izz="8.63E-07"/>
++    </inertial>
++    <visual>
++      <geometry>
++        <mesh filename="package://xarm_description/meshes/gripper/lite/visual/finger2.stl"/>
++      </geometry>
++      <origin rpy="0 0 0" xyz="0 0 0"/>
++      <material name="White"/>
++    </visual>
++    <collision>
++      <geometry>
++        <mesh filename="package://xarm_description/meshes/gripper/lite/visual/finger2.stl"/>
++      </geometry>
++      <origin rpy="0 0 0" xyz="0 0 0"/>
++    </collision>
++  </link>
++  <joint name="finger_joint2" type="prismatic">
++    <origin rpy="0 0 0" xyz="0 0 0.0543"/>
++    <parent link="uflite_gripper_link"/>
++    <child link="uflite_finger2"/>
++    <axis xyz="0 -1 0"/>
++    <limit effort="5" lower="0" upper="0.0089" velocity="2"/>
++    <mimic joint="finger_joint1" multiplier="1" offset="0"/>
++  </joint>
++  <link name="link_tcp"/>
++  <joint name="joint_tcp" type="fixed">
++    <origin rpy="0 0 0" xyz="0 0 0.0836"/>
++    <parent link="uflite_gripper_link"/>
++    <child link="link_tcp"/>
++  </joint>
++  <transmission name="finger_joint1_trans">
++    <type>transmission_interface/SimpleTransmission</type>
++    <joint name="finger_joint1">
++      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
++    </joint>
++    <actuator name="finger_joint1_motor">
++      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
++      <mechanicalReduction>1</mechanicalReduction>
++    </actuator>
++  </transmission>
++  <gazebo reference="uflite_gripper_link">
++    <selfCollide>false</selfCollide>
++  </gazebo>
++  <gazebo reference="uflite_finger1">
++    <selfCollide>false</selfCollide>
++  </gazebo>
++  <gazebo reference="uflite_finger2">
++    <selfCollide>false</selfCollide>
++  </gazebo>
++  <gazebo>
++    <plugin filename="libgazebo_mimic_joint_plugin.so" name="finger_joint2mimic_joint_plugin">
++      <joint>finger_joint1</joint>
++      <mimicJoint>finger_joint2</mimicJoint>
++      <!-- if set to true, PID parameters from "/gazebo_ros_control/pid_gains/${mimic_joint}" are loaded -->
++      <hasPID/>
++      <multiplier>1.0</multiplier>
++      <offset>0</offset>
++      <sensitiveness>0.0</sensitiveness>
++      <!-- if absolute difference between setpoint and process value is below this threshold, do nothing; 0.0 = disable [rad] -->
++      <maxEffort>10.0</maxEffort>
++    </plugin>
++  </gazebo>
++  <!-- Insert at the end of xarm_device_macro.xacro -->
++</robot>
+diff --git a/xarm_description/urdf/lite6_complete_realmove_custom.urdf b/xarm_description/urdf/lite6_complete_realmove_custom.urdf
+new file mode 100644
+index 0000000..62df658
+--- /dev/null
++++ b/xarm_description/urdf/lite6_complete_realmove_custom.urdf
+@@ -0,0 +1,599 @@
++<?xml version="1.0" ?>
++<!-- =================================================================================== -->
++<!-- |    This document was autogenerated by xacro from /home/v/xarm_ros2/install/xarm_description/share/xarm_description/urdf/xarm_device.urdf.xacro | -->
++<!-- |    EDITING THIS FILE BY HAND IS NOT RECOMMENDED                                 | -->
++<!-- =================================================================================== -->
++<robot name="UF_ROBOT">
++  <!-- Insert at the beginning of xarm_device_macro.xacro -->
++  <material name="Black">
++    <color rgba="0.0 0.0 0.0 1.0"/>
++  </material>
++  <material name="Red">
++    <color rgba="0.8 0.0 0.0 1.0"/>
++  </material>
++  <material name="White">
++    <color rgba="1.0 1.0 1.0 1.0"/>
++  </material>
++  <material name="Silver">
++    <color rgba="0.753 0.753 0.753 1.0"/>
++  </material>
++  <link name="world"/>
++  <joint name="world_joint" type="fixed">
++    <parent link="world"/>
++    <child link="link_base"/>
++    <origin rpy="0 0 0" xyz="0 0 0"/>
++  </joint>
++  <ros2_control name="uf_robot_hardware/UFRobotSystemHardware" type="system">
++    <hardware>
++      <plugin>uf_robot_hardware/UFRobotSystemHardware</plugin>
++      <param name="hw_ns">xarm</param>
++      <param name="velocity_control">False</param>
++      <param name="prefix">P</param>
++      <param name="robot_ip">R192.168.1.150</param>
++      <param name="report_type">normal</param>
++      <param name="dof">6</param>
++      <param name="baud_checkset">True</param>
++      <param name="default_gripper_baud">2000000</param>
++      <param name="robot_type">lite</param>
++      <param name="add_gripper">True</param>
++    </hardware>
++    <joint name="joint1">
++      <command_interface name="position">
++        <param name="min">-6.283185307179586</param>
++        <param name="max">6.283185307179586</param>
++      </command_interface>
++      <command_interface name="velocity">
++        <param name="min">-3.14</param>
++        <param name="max">3.14</param>
++      </command_interface>
++      <state_interface name="position">
++        <param name="initial_value">1.0</param>
++      </state_interface>
++      <state_interface name="velocity"/>
++      <!-- <state_interface name="effort"/> -->
++    </joint>
++    <joint name="joint2">
++      <command_interface name="position">
++        <param name="min">-2.61799</param>
++        <param name="max">2.61799</param>
++      </command_interface>
++      <command_interface name="velocity">
++        <param name="min">-3.14</param>
++        <param name="max">3.14</param>
++      </command_interface>
++      <state_interface name="position">
++        <param name="initial_value">0.0</param>
++      </state_interface>
++      <state_interface name="velocity"/>
++      <!-- <state_interface name="effort"/> -->
++    </joint>
++    <joint name="joint3">
++      <command_interface name="position">
++        <param name="min">-0.061087</param>
++        <param name="max">5.235988</param>
++      </command_interface>
++      <command_interface name="velocity">
++        <param name="min">-3.14</param>
++        <param name="max">3.14</param>
++      </command_interface>
++      <state_interface name="position">
++        <param name="initial_value">1.57</param>
++      </state_interface>
++      <state_interface name="velocity"/>
++      <!-- <state_interface name="effort"/> -->
++    </joint>
++    <joint name="joint4">
++      <command_interface name="position">
++        <param name="min">-6.283185307179586</param>
++        <param name="max">6.283185307179586</param>
++      </command_interface>
++      <command_interface name="velocity">
++        <param name="min">-3.14</param>
++        <param name="max">3.14</param>
++      </command_interface>
++      <state_interface name="position">
++        <param name="initial_value">0.0</param>
++      </state_interface>
++      <state_interface name="velocity"/>
++      <!-- <state_interface name="effort"/> -->
++    </joint>
++    <joint name="joint5">
++      <command_interface name="position">
++        <param name="min">-2.1642</param>
++        <param name="max">2.1642</param>
++      </command_interface>
++      <command_interface name="velocity">
++        <param name="min">-3.14</param>
++        <param name="max">3.14</param>
++      </command_interface>
++      <state_interface name="position">
++        <param name="initial_value">1.57</param>
++      </state_interface>
++      <state_interface name="velocity"/>
++      <!-- <state_interface name="effort"/> -->
++    </joint>
++    <joint name="joint6">
++      <command_interface name="position">
++        <param name="min">-6.283185307179586</param>
++        <param name="max">6.283185307179586</param>
++      </command_interface>
++      <command_interface name="velocity">
++        <param name="min">-3.14</param>
++        <param name="max">3.14</param>
++      </command_interface>
++      <state_interface name="position">
++        <param name="initial_value">1.0</param>
++      </state_interface>
++      <state_interface name="velocity"/>
++      <!-- <state_interface name="effort"/> -->
++    </joint>
++  </ros2_control>
++  <link name="link_base">
++    <inertial>
++      <origin rpy="0 0 0" xyz="-0.00829544579053192 3.26357432323433E-05 0.0631194584987089"/>
++      <mass value="1.65393501783165"/>
++      <inertia ixx="0" ixy="0" ixz="0" iyy="0" iyz="0" izz="0"/>
++    </inertial>
++    <visual>
++      <geometry>
++        <mesh filename="package://xarm_description/meshes/lite6/visual/link_base.stl"/>
++      </geometry>
++      <origin rpy="0 0 0" xyz="0 0 0"/>
++      <material name="White"/>
++    </visual>
++    <collision>
++      <geometry>
++        <mesh filename="package://xarm_description/meshes/lite6/collision/link_base.stl"/>
++      </geometry>
++      <origin rpy="0 0 0" xyz="0 0 0"/>
++    </collision>
++  </link>
++  <link name="link1">
++    <inertial>
++      <origin rpy="0 0 0" xyz="-0.00036 0.04195 -0.0025"/>
++      <mass value="1.411"/>
++      <inertia ixx="0.0014516400000000001" ixy="-1.24e-05" ixz="6.7e-06" iyy="0.0008872999999999999" iyz="-0.0001255" izz="0.00131993"/>
++    </inertial>
++    <visual>
++      <geometry>
++        <mesh filename="package://xarm_description/meshes/lite6/visual/link1.stl"/>
++      </geometry>
++      <origin rpy="0 0 0" xyz="0 0 0"/>
++      <material name="White"/>
++    </visual>
++    <collision>
++      <geometry>
++        <mesh filename="package://xarm_description/meshes/lite6/collision/link1.stl"/>
++      </geometry>
++      <origin rpy="0 0 0" xyz="0 0 0"/>
++    </collision>
++  </link>
++  <joint name="joint1" type="revolute">
++    <origin rpy="0 0 0" xyz="0 0 0.2435"/>
++    <parent link="link_base"/>
++    <child link="link1"/>
++    <axis xyz="0 0 1"/>
++    <limit effort="50.0" lower="-6.283185307179586" upper="6.283185307179586" velocity="3.14"/>
++    <dynamics damping="1.0" friction="1.0"/>
++  </joint>
++  <link name="link2">
++    <inertial>
++      <origin rpy="0 0 0" xyz="0.179 0.0 0.0584"/>
++      <mass value="1.34"/>
++      <inertia ixx="0.0015854" ixy="6.766e-06" ixz="0.00115136" iyy="0.0056097" iyz="-1.1399999999999999e-06" izz="0.00485"/>
++    </inertial>
++    <visual>
++      <geometry>
++        <mesh filename="package://xarm_description/meshes/lite6/visual/link2.stl"/>
++      </geometry>
++      <origin rpy="0 0 0" xyz="0 0 0"/>
++      <material name="White"/>
++    </visual>
++    <collision>
++      <geometry>
++        <mesh filename="package://xarm_description/meshes/lite6/collision/link2.stl"/>
++      </geometry>
++      <origin rpy="0 0 0" xyz="0 0 0"/>
++    </collision>
++  </link>
++  <joint name="joint2" type="revolute">
++    <origin rpy="1.5708 -1.5708 3.1416" xyz="0 0 0"/>
++    <parent link="link1"/>
++    <child link="link2"/>
++    <axis xyz="0 0 1"/>
++    <limit effort="50.0" lower="-2.61799" upper="2.61799" velocity="3.14"/>
++    <dynamics damping="1.0" friction="1.0"/>
++  </joint>
++  <link name="link3">
++    <inertial>
++      <origin rpy="0 0 0" xyz="0.072 -0.0357 -0.001"/>
++      <mass value="0.953"/>
++      <inertia ixx="0.0008861" ixy="0.00039286999999999997" ixz="-7.065999999999999e-05" iyy="0.0015784999999999998" iyz="2.4449999999999998e-05" izz="0.00184677"/>
++    </inertial>
++    <visual>
++      <geometry>
++        <mesh filename="package://xarm_description/meshes/lite6/visual/link3.stl"/>
++      </geometry>
++      <origin rpy="0 0 0" xyz="0 0 0"/>
++      <material name="White"/>
++    </visual>
++    <collision>
++      <geometry>
++        <mesh filename="package://xarm_description/meshes/lite6/collision/link3.stl"/>
++      </geometry>
++      <origin rpy="0 0 0" xyz="0 0 0"/>
++    </collision>
++  </link>
++  <joint name="joint3" type="revolute">
++    <origin rpy="-3.1416 0 1.5708" xyz="0.2002 0 0"/>
++    <parent link="link2"/>
++    <child link="link3"/>
++    <axis xyz="0 0 1"/>
++    <limit effort="32.0" lower="-0.061087" upper="5.235988" velocity="3.14"/>
++    <dynamics damping="1.0" friction="1.0"/>
++  </joint>
++  <link name="link4">
++    <inertial>
++      <origin rpy="0 0 0" xyz="-0.002 -0.0285 -0.0813"/>
++      <mass value="1.284"/>
++      <inertia ixx="0.003705" ixy="2e-06" ixz="-7.17e-06" iyy="0.0030455" iyz="0.00093188" izz="0.0015412999999999998"/>
++    </inertial>
++    <visual>
++      <geometry>
++        <mesh filename="package://xarm_description/meshes/lite6/visual/link4.stl"/>
++      </geometry>
++      <origin rpy="0 0 0" xyz="0 0 0"/>
++      <material name="White"/>
++    </visual>
++    <collision>
++      <geometry>
++        <mesh filename="package://xarm_description/meshes/lite6/collision/link4.stl"/>
++      </geometry>
++      <origin rpy="0 0 0" xyz="0 0 0"/>
++    </collision>
++  </link>
++  <joint name="joint4" type="revolute">
++    <origin rpy="1.5708 0 0" xyz="0.087 -0.22761 0"/>
++    <parent link="link3"/>
++    <child link="link4"/>
++    <axis xyz="0 0 1"/>
++    <limit effort="32.0" lower="-6.283185307179586" upper="6.283185307179586" velocity="3.14"/>
++    <dynamics damping="1.0" friction="1.0"/>
++  </joint>
++  <link name="link5">
++    <inertial>
++      <origin rpy="0 0 0" xyz="0.0 0.01 0.0019"/>
++      <mass value="0.804"/>
++      <inertia ixx="0.0005667999999999999" ixy="-6e-07" ixz="5.299999999999999e-06" iyy="0.0005076999999999999" iyz="4.8e-07" izz="0.00053"/>
++    </inertial>
++    <visual>
++      <geometry>
++        <mesh filename="package://xarm_description/meshes/lite6/visual/link5.stl"/>
++      </geometry>
++      <origin rpy="0 0 0" xyz="0 0 0"/>
++      <material name="White"/>
++    </visual>
++    <collision>
++      <geometry>
++        <mesh filename="package://xarm_description/meshes/lite6/collision/link5.stl"/>
++      </geometry>
++      <origin rpy="0 0 0" xyz="0 0 0"/>
++    </collision>
++  </link>
++  <joint name="joint5" type="revolute">
++    <origin rpy="1.5708 0 0" xyz="0 0 0"/>
++    <parent link="link4"/>
++    <child link="link5"/>
++    <axis xyz="0 0 1"/>
++    <limit effort="32.0" lower="-2.1642" upper="2.1642" velocity="3.14"/>
++    <dynamics damping="1.0" friction="1.0"/>
++  </joint>
++  <link name="link6">
++    <inertial>
++      <origin rpy="0 0 0" xyz="0.0 -0.00194 -0.0102"/>
++      <mass value="0.13"/>
++      <inertia ixx="7.726e-05" ixy="-1e-06" ixz="-4e-07" iyy="8.5665e-05" iyz="6e-07" izz="0.00014813999999999997"/>
++    </inertial>
++    <visual>
++      <geometry>
++        <mesh filename="package://xarm_description/meshes/lite6/visual/link6.stl"/>
++      </geometry>
++      <origin rpy="0 0 0" xyz="0 0 0"/>
++      <material name="Silver"/>
++    </visual>
++    <collision>
++      <geometry>
++        <mesh filename="package://xarm_description/meshes/lite6/collision/link6.stl"/>
++      </geometry>
++      <origin rpy="0 0 0" xyz="0 0 0"/>
++    </collision>
++  </link>
++  <joint name="joint6" type="revolute">
++    <origin rpy="-1.5708 0 0" xyz="0 0.0625 0"/>
++    <parent link="link5"/>
++    <child link="link6"/>
++    <axis xyz="0 0 1"/>
++    <limit effort="20.0" lower="-6.283185307179586" upper="6.283185307179586" velocity="3.14"/>
++    <dynamics damping="1.0" friction="1.0"/>
++  </joint>
++  <!-- <link name="${prefix}link_eef" />
++    <joint name="${prefix}joint_eef" type="fixed">
++      <origin xyz="0 0 0" rpy="0 0 0" />
++      <parent link="${prefix}link6" />
++      <child link="${prefix}link_eef" />
++    </joint> -->
++  <transmission name="tran1">
++    <type>transmission_interface/SimpleTransmission</type>
++    <joint name="joint1">
++      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
++    </joint>
++    <actuator name="motor1">
++      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
++      <mechanicalReduction>100</mechanicalReduction>
++    </actuator>
++  </transmission>
++  <transmission name="tran2">
++    <type>transmission_interface/SimpleTransmission</type>
++    <joint name="joint2">
++      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
++    </joint>
++    <actuator name="motor2">
++      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
++      <mechanicalReduction>100</mechanicalReduction>
++    </actuator>
++  </transmission>
++  <transmission name="tran3">
++    <type>transmission_interface/SimpleTransmission</type>
++    <joint name="joint3">
++      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
++    </joint>
++    <actuator name="motor3">
++      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
++      <mechanicalReduction>100</mechanicalReduction>
++    </actuator>
++  </transmission>
++  <transmission name="tran4">
++    <type>transmission_interface/SimpleTransmission</type>
++    <joint name="joint4">
++      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
++    </joint>
++    <actuator name="motor4">
++      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
++      <mechanicalReduction>100</mechanicalReduction>
++    </actuator>
++  </transmission>
++  <transmission name="tran5">
++    <type>transmission_interface/SimpleTransmission</type>
++    <joint name="joint5">
++      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
++    </joint>
++    <actuator name="motor5">
++      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
++      <mechanicalReduction>100</mechanicalReduction>
++    </actuator>
++  </transmission>
++  <transmission name="tran6">
++    <type>transmission_interface/SimpleTransmission</type>
++    <joint name="joint6">
++      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
++    </joint>
++    <actuator name="motor6">
++      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
++      <mechanicalReduction>100</mechanicalReduction>
++    </actuator>
++  </transmission>
++  <gazebo reference="link_base">
++    <selfCollide>true</selfCollide>
++  </gazebo>
++  <gazebo reference="link1">
++    <selfCollide>true</selfCollide>
++  </gazebo>
++  <gazebo reference="link2">
++    <selfCollide>true</selfCollide>
++  </gazebo>
++  <gazebo reference="link3">
++    <selfCollide>true</selfCollide>
++  </gazebo>
++  <gazebo reference="link4">
++    <selfCollide>true</selfCollide>
++  </gazebo>
++  <gazebo reference="link5">
++    <selfCollide>true</selfCollide>
++  </gazebo>
++  <gazebo reference="link6">
++    <selfCollide>true</selfCollide>
++  </gazebo>
++  <link name="link_eef">
++    <visual>
++      <geometry>
++        <mesh filename="package://xarm_description/meshes/camera/realsense/visual/d435_with_cam_stand.stl"/>
++      </geometry>
++      <origin rpy="0 0 3.141592653589793" xyz="0 0 0"/>
++      <material name="Silver"/>
++    </visual>
++    <collision>
++      <geometry>
++        <mesh filename="package://xarm_description/meshes/camera/realsense/collision/d435_with_cam_stand.stl"/>
++      </geometry>
++      <origin rpy="0 0 3.141592653589793" xyz="0 0 0"/>
++    </collision>
++  </link>
++  <link name="camera_link"/>
++  <link name="camera_depth_frame"/>
++  <link name="camera_depth_optical_frame"/>
++  <link name="camera_color_frame"/>
++  <link name="camera_color_optical_frame"/>
++  <link name="camera_left_ir_frame"/>
++  <link name="camera_left_ir_optical_frame"/>
++  <link name="camera_right_ir_frame"/>
++  <link name="camera_right_ir_optical_frame"/>
++  <joint name="camera_link_joint" type="fixed">
++    <parent link="link_eef"/>
++    <child link="camera_link"/>
++    <origin rpy="3.141592653589793 -1.5707963267948966 0" xyz="0.06746 -0.0175 0.0237"/>
++  </joint>
++  <joint name="camera_depth_joint" type="fixed">
++    <parent link="camera_link"/>
++    <child link="camera_depth_frame"/>
++    <origin rpy="0 0 0" xyz="0 0 0"/>
++  </joint>
++  <joint name="camera_depth_optical_joint" type="fixed">
++    <parent link="camera_depth_frame"/>
++    <child link="camera_depth_optical_frame"/>
++    <origin rpy="-1.5707963267948966 0 -1.5707963267948966" xyz="0 0 0"/>
++  </joint>
++  <joint name="camera_color_joint" type="fixed">
++    <parent link="camera_link"/>
++    <child link="camera_color_frame"/>
++    <origin rpy="0 0 0" xyz="0 0.015 0"/>
++  </joint>
++  <joint name="camera_color_optical_joint" type="fixed">
++    <parent link="camera_color_frame"/>
++    <child link="camera_color_optical_frame"/>
++    <origin rpy="-1.5707963267948966 0 -1.5707963267948966" xyz="0 0 0"/>
++  </joint>
++  <joint name="camera_left_ir_joint" type="fixed">
++    <parent link="camera_link"/>
++    <child link="camera_left_ir_frame"/>
++    <origin rpy="0 0 0" xyz="0 0 0"/>
++  </joint>
++  <joint name="camera_left_ir_optical_joint" type="fixed">
++    <parent link="camera_left_ir_frame"/>
++    <child link="camera_left_ir_optical_frame"/>
++    <origin rpy="-1.5707963267948966 0 -1.5707963267948966" xyz="0 0 0"/>
++  </joint>
++  <joint name="camera_right_ir_joint" type="fixed">
++    <parent link="camera_link"/>
++    <child link="camera_right_ir_frame"/>
++    <origin rpy="0 0 0" xyz="0 -0.050 0"/>
++  </joint>
++  <joint name="camera_right_ir_optical_joint" type="fixed">
++    <parent link="camera_right_ir_frame"/>
++    <child link="camera_right_ir_optical_frame"/>
++    <origin rpy="-1.5707963267948966 0 -1.5707963267948966" xyz="0 0 0"/>
++  </joint>
++  <joint name="joint_eef" type="fixed">
++    <origin rpy="0 0 0" xyz="0 0 0"/>
++    <parent link="link6"/>
++    <child link="link_eef"/>
++  </joint>
++  <joint name="gripper_fix" type="fixed">
++    <parent link="link_eef"/>
++    <child link="uflite_gripper_link"/>
++    <origin rpy="0 0 0" xyz="0 0 0"/>
++  </joint>
++  <link name="uflite_gripper_link">
++    <inertial>
++      <origin rpy="0 0 0" xyz="0.0 0.0 0.030"/>
++      <mass value="0.25"/>
++      <inertia ixx="0.00047106" ixy="3.9292E-07" ixz="2.6537E-06" iyy="0.00033072" iyz="-1.0975E-05" izz="0.00025642"/>
++    </inertial>
++    <visual>
++      <geometry>
++        <mesh filename="package://xarm_description/meshes/gripper/lite/visual/shell.stl"/>
++      </geometry>
++      <origin rpy="0 0 0" xyz="0 0 0"/>
++      <material name="White"/>
++    </visual>
++    <collision>
++      <geometry>
++        <mesh filename="package://xarm_description/meshes/gripper/lite/visual/shell.stl"/>
++      </geometry>
++      <origin rpy="0 0 0" xyz="0 0 0"/>
++    </collision>
++  </link>
++  <link name="uflite_finger1">
++    <inertial>
++      <origin rpy="0 0 0" xyz="0.0 0.01 0.0086"/>
++      <mass value="0.0163"/>
++      <inertia ixx="1.425E-06" ixy="0.0" ixz="0.0" iyy="1.63E-06" iyz="-3.1E-07" izz="8.63E-07"/>
++    </inertial>
++    <visual>
++      <geometry>
++        <mesh filename="package://xarm_description/meshes/gripper/lite/visual/finger1.stl"/>
++      </geometry>
++      <origin rpy="0 0 0" xyz="0 0 0"/>
++      <material name="White"/>
++    </visual>
++    <collision>
++      <geometry>
++        <mesh filename="package://xarm_description/meshes/gripper/lite/visual/finger1.stl"/>
++      </geometry>
++      <origin rpy="0 0 0" xyz="0 0 0"/>
++    </collision>
++  </link>
++  <joint name="finger_joint1" type="prismatic">
++    <origin rpy="0 0 0" xyz="0 0 0.0543"/>
++    <parent link="uflite_gripper_link"/>
++    <child link="uflite_finger1"/>
++    <axis xyz="0 1 0"/>
++    <limit effort="5" lower="0" upper="0.0089" velocity="2"/>
++  </joint>
++  <link name="uflite_finger2">
++    <inertial>
++      <origin rpy="0 0 0" xyz="0.0 -0.01 0.0086"/>
++      <mass value="0.0163"/>
++      <inertia ixx="1.425E-06" ixy="0.0" ixz="0.0" iyy="1.63E-06" iyz="3.1E-07" izz="8.63E-07"/>
++    </inertial>
++    <visual>
++      <geometry>
++        <mesh filename="package://xarm_description/meshes/gripper/lite/visual/finger2.stl"/>
++      </geometry>
++      <origin rpy="0 0 0" xyz="0 0 0"/>
++      <material name="White"/>
++    </visual>
++    <collision>
++      <geometry>
++        <mesh filename="package://xarm_description/meshes/gripper/lite/visual/finger2.stl"/>
++      </geometry>
++      <origin rpy="0 0 0" xyz="0 0 0"/>
++    </collision>
++  </link>
++  <joint name="finger_joint2" type="prismatic">
++    <origin rpy="0 0 0" xyz="0 0 0.0543"/>
++    <parent link="uflite_gripper_link"/>
++    <child link="uflite_finger2"/>
++    <axis xyz="0 -1 0"/>
++    <limit effort="5" lower="0" upper="0.0089" velocity="2"/>
++    <mimic joint="finger_joint1" multiplier="1" offset="0"/>
++  </joint>
++  <link name="link_tcp"/>
++  <joint name="joint_tcp" type="fixed">
++    <origin rpy="0 0 0" xyz="0 0 0.0836"/>
++    <parent link="uflite_gripper_link"/>
++    <child link="link_tcp"/>
++  </joint>
++  <transmission name="finger_joint1_trans">
++    <type>transmission_interface/SimpleTransmission</type>
++    <joint name="finger_joint1">
++      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
++    </joint>
++    <actuator name="finger_joint1_motor">
++      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
++      <mechanicalReduction>1</mechanicalReduction>
++    </actuator>
++  </transmission>
++  <gazebo reference="uflite_gripper_link">
++    <selfCollide>false</selfCollide>
++  </gazebo>
++  <gazebo reference="uflite_finger1">
++    <selfCollide>false</selfCollide>
++  </gazebo>
++  <gazebo reference="uflite_finger2">
++    <selfCollide>false</selfCollide>
++  </gazebo>
++  <gazebo>
++    <plugin filename="libgazebo_mimic_joint_plugin.so" name="finger_joint2mimic_joint_plugin">
++      <joint>finger_joint1</joint>
++      <mimicJoint>finger_joint2</mimicJoint>
++      <!-- if set to true, PID parameters from "/gazebo_ros_control/pid_gains/${mimic_joint}" are loaded -->
++      <hasPID/>
++      <multiplier>1.0</multiplier>
++      <offset>0</offset>
++      <sensitiveness>0.0</sensitiveness>
++      <!-- if absolute difference between setpoint and process value is below this threshold, do nothing; 0.0 = disable [rad] -->
++      <maxEffort>10.0</maxEffort>
++    </plugin>
++  </gazebo>
++  <!-- Insert at the end of xarm_device_macro.xacro -->
++</robot>
+diff --git a/xarm_moveit_config/config/lite6/fake_controllers_fanout.yaml b/xarm_moveit_config/config/lite6/fake_controllers_fanout.yaml
+new file mode 100644
+index 0000000..eab6443
+--- /dev/null
++++ b/xarm_moveit_config/config/lite6/fake_controllers_fanout.yaml
+@@ -0,0 +1,14 @@
++controller_names:
++  - lite6_traj_fanout
++
++lite6_traj_fanout:
++  action_ns: follow_joint_trajectory
++  type: FollowJointTrajectory
++  default: true
++  joints:
++    - joint1
++    - joint2
++    - joint3
++    - joint4
++    - joint5
++    - joint6
+diff --git a/xarm_moveit_config/launch/_robot_moveit_fake_custom.launch.py b/xarm_moveit_config/launch/_robot_moveit_fake_custom.launch.py
+new file mode 100644
+index 0000000..b4bf5d7
+--- /dev/null
++++ b/xarm_moveit_config/launch/_robot_moveit_fake_custom.launch.py
+@@ -0,0 +1,194 @@
++#!/usr/bin/env python3
++# Software License Agreement (BSD License)
++#
++# Copyright (c) 2021, UFACTORY, Inc.
++# All rights reserved.
++#
++# Author: Vinman <vinman.wen@ufactory.cc> <vinman.cub@gmail.com>
++
++import os
++import yaml
++from ament_index_python import get_package_share_directory
++from launch import LaunchDescription
++from launch.actions import OpaqueFunction, IncludeLaunchDescription, DeclareLaunchArgument
++from launch.launch_description_sources import PythonLaunchDescriptionSource
++from launch.substitutions import LaunchConfiguration, PathJoinSubstitution
++from launch_ros.substitutions import FindPackageShare
++from launch_ros.actions import Node
++from uf_ros_lib.moveit_configs_builder import MoveItConfigsBuilder
++from uf_ros_lib.uf_robot_utils import generate_ros2_control_params_temp_file
++
++
++def launch_setup(context, *args, **kwargs):
++    dof = LaunchConfiguration('dof', default=7)
++    robot_type = LaunchConfiguration('robot_type', default='xarm')
++    prefix = LaunchConfiguration('prefix', default='')
++    hw_ns = LaunchConfiguration('hw_ns', default='xarm')
++    limited = LaunchConfiguration('limited', default=True)
++    effort_control = LaunchConfiguration('effort_control', default=False)
++    velocity_control = LaunchConfiguration('velocity_control', default=False)
++    model1300 = LaunchConfiguration('model1300', default=False)
++    robot_sn = LaunchConfiguration('robot_sn', default='')
++    attach_to = LaunchConfiguration('attach_to', default='world')
++    attach_xyz = LaunchConfiguration('attach_xyz', default='"0 0 0"')
++    attach_rpy = LaunchConfiguration('attach_rpy', default='"0 0 0"')
++    mesh_suffix = LaunchConfiguration('mesh_suffix', default='stl')
++    kinematics_suffix = LaunchConfiguration('kinematics_suffix', default='')
++    gripper_version = LaunchConfiguration('gripper_version', default='G1')
++
++    add_gripper = LaunchConfiguration('add_gripper', default=False)
++    add_vacuum_gripper = LaunchConfiguration('add_vacuum_gripper', default=False)
++    add_bio_gripper = LaunchConfiguration('add_bio_gripper', default=False)
++    add_realsense_d435i = LaunchConfiguration('add_realsense_d435i', default=False)
++    add_d435i_links = LaunchConfiguration('add_d435i_links', default=True)
++    add_other_geometry = LaunchConfiguration('add_other_geometry', default=False)
++    geometry_type = LaunchConfiguration('geometry_type', default='box')
++    geometry_mass = LaunchConfiguration('geometry_mass', default=0.1)
++    geometry_height = LaunchConfiguration('geometry_height', default=0.1)
++    geometry_radius = LaunchConfiguration('geometry_radius', default=0.1)
++    geometry_length = LaunchConfiguration('geometry_length', default=0.1)
++    geometry_width = LaunchConfiguration('geometry_width', default=0.1)
++    geometry_mesh_filename = LaunchConfiguration('geometry_mesh_filename', default='')
++    geometry_mesh_origin_xyz = LaunchConfiguration('geometry_mesh_origin_xyz', default='"0 0 0"')
++    geometry_mesh_origin_rpy = LaunchConfiguration('geometry_mesh_origin_rpy', default='"0 0 0"')
++    geometry_mesh_tcp_xyz = LaunchConfiguration('geometry_mesh_tcp_xyz', default='"0 0 0"')
++    geometry_mesh_tcp_rpy = LaunchConfiguration('geometry_mesh_tcp_rpy', default='"0 0 0"')
++
++    no_gui_ctrl = LaunchConfiguration('no_gui_ctrl', default=False)
++    ros_namespace = LaunchConfiguration('ros_namespace', default='').perform(context)
++
++    ros2_control_plugin = 'uf_robot_hardware/UFRobotFakeSystemHardware'
++    controllers_name = 'fake_controllers'
++    xarm_type = '{}{}'.format(robot_type.perform(context), dof.perform(context) if robot_type.perform(context) in ('xarm', 'lite') else '')
++
++    ros2_control_params = generate_ros2_control_params_temp_file(
++        os.path.join(get_package_share_directory('xarm_controller'), 'config', '{}_controllers.yaml'.format(xarm_type)),
++        prefix=prefix.perform(context), 
++        add_gripper=add_gripper.perform(context) in ('True', 'true'),
++        add_bio_gripper=add_bio_gripper.perform(context) in ('True', 'true'),
++        ros_namespace=ros_namespace,
++        robot_type=robot_type.perform(context)
++    )
++
++    moveit_config = MoveItConfigsBuilder(
++        context=context,
++        controllers_name=controllers_name,
++        dof=dof,
++        robot_type=robot_type,
++        prefix=prefix,
++        hw_ns=hw_ns,
++        limited=limited,
++        effort_control=effort_control,
++        velocity_control=velocity_control,
++        model1300=model1300,
++        robot_sn=robot_sn,
++        attach_to=attach_to,
++        attach_xyz=attach_xyz,
++        attach_rpy=attach_rpy,
++        mesh_suffix=mesh_suffix,
++        kinematics_suffix=kinematics_suffix,
++        ros2_control_plugin=ros2_control_plugin,
++        ros2_control_params=ros2_control_params,
++        gripper_version=gripper_version,
++        add_gripper=add_gripper,
++        add_vacuum_gripper=add_vacuum_gripper,
++        add_bio_gripper=add_bio_gripper,
++        add_realsense_d435i=add_realsense_d435i,
++        add_d435i_links=add_d435i_links,
++        add_other_geometry=add_other_geometry,
++        geometry_type=geometry_type,
++        geometry_mass=geometry_mass,
++        geometry_height=geometry_height,
++        geometry_radius=geometry_radius,
++        geometry_length=geometry_length,
++        geometry_width=geometry_width,
++        geometry_mesh_filename=geometry_mesh_filename,
++        geometry_mesh_origin_xyz=geometry_mesh_origin_xyz,
++        geometry_mesh_origin_rpy=geometry_mesh_origin_rpy,
++        geometry_mesh_tcp_xyz=geometry_mesh_tcp_xyz,
++        geometry_mesh_tcp_rpy=geometry_mesh_tcp_rpy,
++    ).robot_description(
++        # Wrist-camera build: pre-expanded lite6_complete_fake.urdf instead of
++        # re-running xarm_device.urdf.xacro. It's a plain URDF (no xacro:arg),
++        # so mappings={}. Hardware plugin is UFRobotFakeSystemHardware baked
++        # in (see lite6_complete_fake.urdf) — needed since this is a plain
++        # URDF and can't receive the ros2_control_plugin xacro mapping above.
++        file_path=os.path.join(get_package_share_directory('xarm_description'), 'urdf', 'lite6_complete_fake.urdf'),
++        mappings={},
++    ).to_moveit_configs()
++    
++    # robot description launch
++    # xarm_description/launch/_robot_description.launch.py
++    robot_description_launch = IncludeLaunchDescription(
++        PythonLaunchDescriptionSource(PathJoinSubstitution([FindPackageShare('xarm_description'), 'launch', '_robot_description.launch.py'])),
++        launch_arguments={
++            'robot_description': yaml.dump(moveit_config.robot_description),
++        }.items(),
++    )
++
++    # robot moveit common launch
++    # xarm_moveit_config/launch/_robot_moveit_common2.launch.py
++    robot_moveit_common_launch = IncludeLaunchDescription(
++        PythonLaunchDescriptionSource(PathJoinSubstitution([FindPackageShare('xarm_moveit_config'), 'launch', '_robot_moveit_common2.launch.py'])),
++        launch_arguments={
++            'prefix': prefix,
++            'attach_to': attach_to,
++            'attach_xyz': attach_xyz,
++            'attach_rpy': attach_rpy,
++            'no_gui_ctrl': no_gui_ctrl,
++            'use_sim_time': 'false',
++            'moveit_config_dump': yaml.dump(moveit_config.to_dict()),
++        }.items(),
++    )
++
++    controllers = ['{}{}_traj_controller'.format(prefix.perform(context), xarm_type)]
++    if add_gripper.perform(context) in ('True', 'true'):
++        controllers.append('{}{}_gripper_traj_controller'.format(prefix.perform(context), robot_type.perform(context)))
++    elif add_bio_gripper.perform(context) in ('True', 'true') and robot_type.perform(context) != 'lite':
++        controllers.append('{}bio_gripper_traj_controller'.format(prefix.perform(context)))
++
++    # ros2 control launch
++    # xarm_controller/launch/_ros2_control.launch.py
++    ros2_control_launch = IncludeLaunchDescription(
++        PythonLaunchDescriptionSource(PathJoinSubstitution([FindPackageShare('xarm_controller'), 'launch', '_ros2_control.launch.py'])),
++        launch_arguments={
++            'robot_description': yaml.dump(moveit_config.robot_description),
++            'ros2_control_params': ros2_control_params,
++        }.items(),
++    )
++
++    joint_state_broadcaster = Node(
++        package='controller_manager',
++        executable='spawner',
++        output='screen',
++        arguments=[
++            'joint_state_broadcaster',
++            '--controller-manager', '{}/controller_manager'.format(ros_namespace)
++        ],
++    )
++
++    # Load controllers
++    controller_nodes = []
++    for controller in controllers:
++        controller_nodes.append(Node(
++            package='controller_manager',
++            executable='spawner',
++            output='screen',
++            arguments=[
++                controller,
++                '--controller-manager', '{}/controller_manager'.format(ros_namespace)
++            ],
++        ))
++
++    return [
++        robot_description_launch,
++        robot_moveit_common_launch,
++        joint_state_broadcaster,
++        ros2_control_launch,
++    ] + controller_nodes
++
++
++def generate_launch_description():
++    return LaunchDescription([
++        OpaqueFunction(function=launch_setup)
++    ])
+diff --git a/xarm_moveit_config/launch/_robot_moveit_realmove_custom.launch.py b/xarm_moveit_config/launch/_robot_moveit_realmove_custom.launch.py
+new file mode 100644
+index 0000000..68920c0
+--- /dev/null
++++ b/xarm_moveit_config/launch/_robot_moveit_realmove_custom.launch.py
+@@ -0,0 +1,201 @@
++#!/usr/bin/env python3
++# Software License Agreement (BSD License)
++#
++# Copyright (c) 2021, UFACTORY, Inc.
++# All rights reserved.
++#
++# Author: Vinman <vinman.wen@ufactory.cc> <vinman.cub@gmail.com>
++#
++# Wrist-camera build: same as _robot_moveit_realmove.launch.py, but builds
++# robot_description with add_realsense_d435i defaulting to true and a new
++# flip_camera_mount arg (defaulting to true here) that rotates the D435i
++# mount mesh 180deg about Z, for a camera remounted on the wrist underside.
++# Unlike the previous version of this file, robot_description is still
++# generated dynamically from xarm_device.urdf.xacro (see
++# xarm_description/urdf/camera/realsense_d435i.urdf.xacro), not from a
++# frozen/pre-baked URDF file, so robot_ip/prefix/etc. stay correct and no
++# ros2_control state_interface initial_value overrides get baked in.
++
++import os
++import yaml
++from ament_index_python import get_package_share_directory
++from launch import LaunchDescription
++from launch.actions import OpaqueFunction, IncludeLaunchDescription, DeclareLaunchArgument
++from launch.launch_description_sources import PythonLaunchDescriptionSource
++from launch.substitutions import LaunchConfiguration, PathJoinSubstitution
++from launch_ros.substitutions import FindPackageShare
++from launch_ros.actions import Node
++from uf_ros_lib.moveit_configs_builder import MoveItConfigsBuilder
++from uf_ros_lib.uf_robot_utils import generate_ros2_control_params_temp_file
++
++
++def launch_setup(context, *args, **kwargs):
++    robot_ip = LaunchConfiguration('robot_ip')
++    report_type = LaunchConfiguration('report_type', default='normal')
++    baud_checkset = LaunchConfiguration('baud_checkset', default=True)
++    default_gripper_baud = LaunchConfiguration('default_gripper_baud', default=2000000)
++
++    dof = LaunchConfiguration('dof', default=7)
++    robot_type = LaunchConfiguration('robot_type', default='xarm')
++    prefix = LaunchConfiguration('prefix', default='')
++    hw_ns = LaunchConfiguration('hw_ns', default='xarm')
++    limited = LaunchConfiguration('limited', default=True)
++    effort_control = LaunchConfiguration('effort_control', default=False)
++    velocity_control = LaunchConfiguration('velocity_control', default=False)
++    model1300 = LaunchConfiguration('model1300', default=False)
++    robot_sn = LaunchConfiguration('robot_sn', default='')
++    attach_to = LaunchConfiguration('attach_to', default='world')
++    attach_xyz = LaunchConfiguration('attach_xyz', default='"0 0 0"')
++    attach_rpy = LaunchConfiguration('attach_rpy', default='"0 0 0"')
++    mesh_suffix = LaunchConfiguration('mesh_suffix', default='stl')
++    kinematics_suffix = LaunchConfiguration('kinematics_suffix', default='')
++    gripper_version = LaunchConfiguration('gripper_version', default='G1')
++
++    add_gripper = LaunchConfiguration('add_gripper', default=False)
++    add_vacuum_gripper = LaunchConfiguration('add_vacuum_gripper', default=False)
++    add_bio_gripper = LaunchConfiguration('add_bio_gripper', default=False)
++    add_realsense_d435i = LaunchConfiguration('add_realsense_d435i', default=True)
++    add_d435i_links = LaunchConfiguration('add_d435i_links', default=True)
++    flip_camera_mount = LaunchConfiguration('flip_camera_mount', default=True)
++    add_other_geometry = LaunchConfiguration('add_other_geometry', default=False)
++    geometry_type = LaunchConfiguration('geometry_type', default='box')
++    geometry_mass = LaunchConfiguration('geometry_mass', default=0.1)
++    geometry_height = LaunchConfiguration('geometry_height', default=0.1)
++    geometry_radius = LaunchConfiguration('geometry_radius', default=0.1)
++    geometry_length = LaunchConfiguration('geometry_length', default=0.1)
++    geometry_width = LaunchConfiguration('geometry_width', default=0.1)
++    geometry_mesh_filename = LaunchConfiguration('geometry_mesh_filename', default='')
++    geometry_mesh_origin_xyz = LaunchConfiguration('geometry_mesh_origin_xyz', default='"0 0 0"')
++    geometry_mesh_origin_rpy = LaunchConfiguration('geometry_mesh_origin_rpy', default='"0 0 0"')
++    geometry_mesh_tcp_xyz = LaunchConfiguration('geometry_mesh_tcp_xyz', default='"0 0 0"')
++    geometry_mesh_tcp_rpy = LaunchConfiguration('geometry_mesh_tcp_rpy', default='"0 0 0"')
++
++    no_gui_ctrl = LaunchConfiguration('no_gui_ctrl', default=False)
++    ros_namespace = LaunchConfiguration('ros_namespace', default='').perform(context)
++
++    ros2_control_plugin = 'uf_robot_hardware/UFRobotSystemHardware'
++    controllers_name = 'controllers'
++    xarm_type = '{}{}'.format(robot_type.perform(context), dof.perform(context) if robot_type.perform(context) in ('xarm', 'lite') else '')
++
++    ros2_control_params = generate_ros2_control_params_temp_file(
++        os.path.join(get_package_share_directory('xarm_controller'), 'config', '{}_controllers.yaml'.format(xarm_type)),
++        prefix=prefix.perform(context),
++        add_gripper=add_gripper.perform(context) in ('True', 'true'),
++        add_bio_gripper=add_bio_gripper.perform(context) in ('True', 'true'),
++        ros_namespace=ros_namespace,
++        robot_type=robot_type.perform(context)
++    )
++
++    moveit_config = MoveItConfigsBuilder(
++        context=context,
++        controllers_name=controllers_name,
++        robot_ip=robot_ip,
++        report_type=report_type,
++        baud_checkset=baud_checkset,
++        default_gripper_baud=default_gripper_baud,
++        dof=dof,
++        robot_type=robot_type,
++        prefix=prefix,
++        hw_ns=hw_ns,
++        limited=limited,
++        effort_control=effort_control,
++        velocity_control=velocity_control,
++        model1300=model1300,
++        robot_sn=robot_sn,
++        attach_to=attach_to,
++        attach_xyz=attach_xyz,
++        attach_rpy=attach_rpy,
++        mesh_suffix=mesh_suffix,
++        kinematics_suffix=kinematics_suffix,
++        ros2_control_plugin=ros2_control_plugin,
++        ros2_control_params=ros2_control_params,
++        gripper_version=gripper_version,
++        add_gripper=add_gripper,
++        add_vacuum_gripper=add_vacuum_gripper,
++        add_bio_gripper=add_bio_gripper,
++        add_realsense_d435i=add_realsense_d435i,
++        add_d435i_links=add_d435i_links,
++        flip_camera_mount=flip_camera_mount,
++        add_other_geometry=add_other_geometry,
++        geometry_type=geometry_type,
++        geometry_mass=geometry_mass,
++        geometry_height=geometry_height,
++        geometry_radius=geometry_radius,
++        geometry_length=geometry_length,
++        geometry_width=geometry_width,
++        geometry_mesh_filename=geometry_mesh_filename,
++        geometry_mesh_origin_xyz=geometry_mesh_origin_xyz,
++        geometry_mesh_origin_rpy=geometry_mesh_origin_rpy,
++        geometry_mesh_tcp_xyz=geometry_mesh_tcp_xyz,
++        geometry_mesh_tcp_rpy=geometry_mesh_tcp_rpy,
++    ).to_moveit_configs()
++
++    # robot description launch
++    # xarm_description/launch/_robot_description.launch.py
++    robot_description_launch = IncludeLaunchDescription(
++        PythonLaunchDescriptionSource(PathJoinSubstitution([FindPackageShare('xarm_description'), 'launch', '_robot_description.launch.py'])),
++        launch_arguments={
++            'robot_description': yaml.dump(moveit_config.robot_description),
++        }.items(),
++    )
++
++    # robot moveit common launch
++    # xarm_moveit_config/launch/_robot_moveit_common2.launch.py
++    robot_moveit_common_launch = IncludeLaunchDescription(
++        PythonLaunchDescriptionSource(PathJoinSubstitution([FindPackageShare('xarm_moveit_config'), 'launch', '_robot_moveit_common2.launch.py'])),
++        launch_arguments={
++            'prefix': prefix,
++            'attach_to': attach_to,
++            'attach_xyz': attach_xyz,
++            'attach_rpy': attach_rpy,
++            'no_gui_ctrl': no_gui_ctrl,
++            'use_sim_time': 'false',
++            'moveit_config_dump': yaml.dump(moveit_config.to_dict()),
++        }.items(),
++    )
++
++    # joint state publisher node
++    joint_state_publisher_node = Node(
++        package='joint_state_publisher',
++        executable='joint_state_publisher',
++        name='joint_state_publisher',
++        output='screen',
++        parameters=[{'source_list': ['{}{}/joint_states'.format(prefix.perform(context), hw_ns.perform(context))]}],
++        remappings=[
++            ('follow_joint_trajectory', '{}{}_traj_controller/follow_joint_trajectory'.format(prefix.perform(context), xarm_type)),
++        ],
++    )
++
++    # ros2 control launch
++    # xarm_controller/launch/_ros2_control.launch.py
++    ros2_control_launch = IncludeLaunchDescription(
++        PythonLaunchDescriptionSource(PathJoinSubstitution([FindPackageShare('xarm_controller'), 'launch', '_ros2_control.launch.py'])),
++        launch_arguments={
++            'robot_description': yaml.dump(moveit_config.robot_description),
++            'ros2_control_params': ros2_control_params,
++        }.items(),
++    )
++
++    control_node = Node(
++        package='controller_manager',
++        executable='spawner',
++        output='screen',
++        arguments=[
++            '{}{}_traj_controller'.format(prefix.perform(context), xarm_type),
++            '--controller-manager', '{}/controller_manager'.format(ros_namespace)
++        ],
++    )
++
++    return [
++        robot_description_launch,
++        robot_moveit_common_launch,
++        joint_state_publisher_node,
++        ros2_control_launch,
++        control_node,
++    ]
++
++
++def generate_launch_description():
++    return LaunchDescription([
++        OpaqueFunction(function=launch_setup)
++    ])
+diff --git a/xarm_moveit_config/launch/lite6_moveit_fake_custom.launch.py b/xarm_moveit_config/launch/lite6_moveit_fake_custom.launch.py
+new file mode 100644
+index 0000000..b2bb29d
+--- /dev/null
++++ b/xarm_moveit_config/launch/lite6_moveit_fake_custom.launch.py
+@@ -0,0 +1,40 @@
++#!/usr/bin/env python3
++# Software License Agreement (BSD License)
++#
++# Copyright (c) 2021, UFACTORY, Inc.
++# All rights reserved.
++#
++# Author: Vinman <vinman.wen@ufactory.cc> <vinman.cub@gmail.com>
++#
++# Wrist-camera build: same as lite6_moveit_fake.launch.py but loads
++# lite6_complete_fake.urdf (via _robot_moveit_fake_custom.launch.py)
++# instead of re-running xarm_device.urdf.xacro, so the wrist camera links
++# are present. Kept as a separate launch file so the stock
++# lite6_moveit_fake.launch.py stays untouched.
++
++from launch import LaunchDescription
++from launch.actions import IncludeLaunchDescription
++from launch.launch_description_sources import PythonLaunchDescriptionSource
++from launch.substitutions import LaunchConfiguration, PathJoinSubstitution
++from launch_ros.substitutions import FindPackageShare
++
++
++def generate_launch_description():
++    hw_ns = LaunchConfiguration('hw_ns', default='ufactory')
++
++    # robot moveit fake launch (custom, wrist-camera build)
++    # xarm_moveit_config/launch/_robot_moveit_fake_custom.launch.py
++    robot_moveit_fake_launch = IncludeLaunchDescription(
++        PythonLaunchDescriptionSource(PathJoinSubstitution([FindPackageShare('xarm_moveit_config'), 'launch', '_robot_moveit_fake_custom.launch.py'])),
++        launch_arguments={
++            'dof': '6',
++            'robot_type': 'lite',
++            'hw_ns': hw_ns,
++            'no_gui_ctrl': 'false',
++            'add_gripper': 'true',
++        }.items(),
++    )
++
++    return LaunchDescription([
++        robot_moveit_fake_launch
++    ])
+diff --git a/xarm_moveit_config/launch/lite6_moveit_realmove_custom.launch.py b/xarm_moveit_config/launch/lite6_moveit_realmove_custom.launch.py
+new file mode 100644
+index 0000000..646eaed
+--- /dev/null
++++ b/xarm_moveit_config/launch/lite6_moveit_realmove_custom.launch.py
+@@ -0,0 +1,43 @@
++#!/usr/bin/env python3
++# Software License Agreement (BSD License)
++#
++# Copyright (c) 2021, UFACTORY, Inc.
++# All rights reserved.
++#
++# Author: Vinman <vinman.wen@ufactory.cc> <vinman.cub@gmail.com>
++#
++# Wrist-camera build: same as lite6_moveit_realmove.launch.py but loads
++# lite6_complete_realmove_custom.urdf (via
++# _robot_moveit_realmove_custom.launch.py) instead of re-running
++# xarm_device.urdf.xacro, so the wrist camera links are present and joint
++# initial values are [1.0, 0.0, 1.57, 0.0, 1.57, 1.0]. Kept as a separate
++# launch file so the stock lite6_moveit_realmove.launch.py stays untouched.
++
++from launch import LaunchDescription
++from launch.actions import IncludeLaunchDescription
++from launch.launch_description_sources import PythonLaunchDescriptionSource
++from launch.substitutions import LaunchConfiguration, PathJoinSubstitution
++from launch_ros.substitutions import FindPackageShare
++
++
++def generate_launch_description():
++    robot_ip = LaunchConfiguration('robot_ip')
++    hw_ns = LaunchConfiguration('hw_ns', default='ufactory')
++
++    # robot moveit realmove launch (custom, wrist-camera build)
++    # xarm_moveit_config/launch/_robot_moveit_realmove_custom.launch.py
++    robot_moveit_realmove_launch = IncludeLaunchDescription(
++        PythonLaunchDescriptionSource(PathJoinSubstitution([FindPackageShare('xarm_moveit_config'), 'launch', '_robot_moveit_realmove_custom.launch.py'])),
++        launch_arguments={
++            'robot_ip': robot_ip,
++            'dof': '6',
++            'robot_type': 'lite',
++            'hw_ns': hw_ns,
++            'no_gui_ctrl': 'false',
++            'add_gripper': 'true',
++        }.items(),
++    )
++
++    return LaunchDescription([
++        robot_moveit_realmove_launch
++    ])

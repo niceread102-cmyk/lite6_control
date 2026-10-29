@@ -53,6 +53,7 @@ setup(
             'custom_ik_rotation = my_lite6_control.custom_ik_rotation:main',
             'custom_ik = my_lite6_control.custom_ik:main',
             'view_joint = my_lite6_control.view_joint:main',
+            'move_to = my_lite6_control.move_to:main',
         ],
     },
 )

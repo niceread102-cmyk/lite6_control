@@ -1,0 +1,63 @@
+[0.563s] Invoking command in '/home/joon/Projects/GDRNPP_bin_picking/lite6_control/lite6_ws/src/my_lite6_control': PYTHONPATH=/home/joon/Projects/GDRNPP_bin_picking/lite6_control/lite6_ws/build/my_lite6_control/prefix_override:/home/joon/Projects/GDRNPP_bin_picking/lite6_control/lite6_ws/install/my_lite6_control/lib/python3.12/site-packages:${PYTHONPATH} /usr/bin/python3 setup.py egg_info --egg-base ../../build/my_lite6_control build --build-base /home/joon/Projects/GDRNPP_bin_picking/lite6_control/lite6_ws/build/my_lite6_control/build install --record /home/joon/Projects/GDRNPP_bin_picking/lite6_control/lite6_ws/build/my_lite6_control/install.log --single-version-externally-managed
+[0.707s] running egg_info
+[0.716s] writing ../../build/my_lite6_control/my_lite6_control.egg-info/PKG-INFO
+[0.716s] writing dependency_links to ../../build/my_lite6_control/my_lite6_control.egg-info/dependency_links.txt
+[0.717s] writing entry points to ../../build/my_lite6_control/my_lite6_control.egg-info/entry_points.txt
+[0.717s] writing requirements to ../../build/my_lite6_control/my_lite6_control.egg-info/requires.txt
+[0.717s] writing top-level names to ../../build/my_lite6_control/my_lite6_control.egg-info/top_level.txt
+[0.783s] reading manifest file '../../build/my_lite6_control/my_lite6_control.egg-info/SOURCES.txt'
+[0.784s] writing manifest file '../../build/my_lite6_control/my_lite6_control.egg-info/SOURCES.txt'
+[0.784s] running build
+[0.784s] running build_py
+[0.785s] copying my_lite6_control/sequence_real_action.py -> /home/joon/Projects/GDRNPP_bin_picking/lite6_control/lite6_ws/build/my_lite6_control/build/lib/my_lite6_control
+[0.785s] running install
+[0.785s] /usr/lib/python3/dist-packages/setuptools/_distutils/cmd.py:66: SetuptoolsDeprecationWarning: setup.py install is deprecated.
+[0.785s] !!
+[0.785s] 
+[0.785s]         ********************************************************************************
+[0.785s]         Please avoid running ``setup.py`` directly.
+[0.785s]         Instead, use pypa/build, pypa/installer or other
+[0.786s]         standards-based tools.
+[0.786s] 
+[0.786s]         See https://blog.ganssle.io/articles/2021/10/setup-py-deprecated.html for details.
+[0.786s]         ********************************************************************************
+[0.786s] 
+[0.786s] !!
+[0.786s]   self.initialize_options()
+[0.788s] running install_lib
+[0.799s] copying /home/joon/Projects/GDRNPP_bin_picking/lite6_control/lite6_ws/build/my_lite6_control/build/lib/my_lite6_control/sequence_real_action.py -> /home/joon/Projects/GDRNPP_bin_picking/lite6_control/lite6_ws/install/my_lite6_control/lib/python3.12/site-packages/my_lite6_control
+[0.800s] byte-compiling /home/joon/Projects/GDRNPP_bin_picking/lite6_control/lite6_ws/install/my_lite6_control/lib/python3.12/site-packages/my_lite6_control/sequence_real_action.py to sequence_real_action.cpython-312.pyc
+[0.801s] running install_data
+[0.811s] copying package.xml -> /home/joon/Projects/GDRNPP_bin_picking/lite6_control/lite6_ws/install/my_lite6_control/share/my_lite6_control
+[0.811s] copying config/default.yaml -> /home/joon/Projects/GDRNPP_bin_picking/lite6_control/lite6_ws/install/my_lite6_control/share/my_lite6_control/config
+[0.812s] running install_egg_info
+[0.823s] removing '/home/joon/Projects/GDRNPP_bin_picking/lite6_control/lite6_ws/install/my_lite6_control/lib/python3.12/site-packages/my_lite6_control-0.0.0-py3.12.egg-info' (and everything under it)
+[0.823s] Copying ../../build/my_lite6_control/my_lite6_control.egg-info to /home/joon/Projects/GDRNPP_bin_picking/lite6_control/lite6_ws/install/my_lite6_control/lib/python3.12/site-packages/my_lite6_control-0.0.0-py3.12.egg-info
+[0.824s] running install_scripts
+[0.867s] Installing auto_pick_loop script to /home/joon/Projects/GDRNPP_bin_picking/lite6_control/lite6_ws/install/my_lite6_control/lib/my_lite6_control
+[0.867s] Installing auto_pick_loop_sim script to /home/joon/Projects/GDRNPP_bin_picking/lite6_control/lite6_ws/install/my_lite6_control/lib/my_lite6_control
+[0.867s] Installing custom_ik script to /home/joon/Projects/GDRNPP_bin_picking/lite6_control/lite6_ws/install/my_lite6_control/lib/my_lite6_control
+[0.868s] Installing custom_ik_rotation script to /home/joon/Projects/GDRNPP_bin_picking/lite6_control/lite6_ws/install/my_lite6_control/lib/my_lite6_control
+[0.868s] Installing ik_node_moveit script to /home/joon/Projects/GDRNPP_bin_picking/lite6_control/lite6_ws/install/my_lite6_control/lib/my_lite6_control
+[0.868s] Installing ik_node_twist script to /home/joon/Projects/GDRNPP_bin_picking/lite6_control/lite6_ws/install/my_lite6_control/lib/my_lite6_control
+[0.868s] Installing ik_node_ur5e script to /home/joon/Projects/GDRNPP_bin_picking/lite6_control/lite6_ws/install/my_lite6_control/lib/my_lite6_control
+[0.868s] Installing joint4 script to /home/joon/Projects/GDRNPP_bin_picking/lite6_control/lite6_ws/install/my_lite6_control/lib/my_lite6_control
+[0.868s] Installing joint6 script to /home/joon/Projects/GDRNPP_bin_picking/lite6_control/lite6_ws/install/my_lite6_control/lib/my_lite6_control
+[0.868s] Installing move_to script to /home/joon/Projects/GDRNPP_bin_picking/lite6_control/lite6_ws/install/my_lite6_control/lib/my_lite6_control
+[0.868s] Installing moveit2 script to /home/joon/Projects/GDRNPP_bin_picking/lite6_control/lite6_ws/install/my_lite6_control/lib/my_lite6_control
+[0.868s] Installing moveit2_action script to /home/joon/Projects/GDRNPP_bin_picking/lite6_control/lite6_ws/install/my_lite6_control/lib/my_lite6_control
+[0.868s] Installing moveit2_cartesian script to /home/joon/Projects/GDRNPP_bin_picking/lite6_control/lite6_ws/install/my_lite6_control/lib/my_lite6_control
+[0.868s] Installing moveit2_servo script to /home/joon/Projects/GDRNPP_bin_picking/lite6_control/lite6_ws/install/my_lite6_control/lib/my_lite6_control
+[0.868s] Installing moveit2_test script to /home/joon/Projects/GDRNPP_bin_picking/lite6_control/lite6_ws/install/my_lite6_control/lib/my_lite6_control
+[0.868s] Installing sequence script to /home/joon/Projects/GDRNPP_bin_picking/lite6_control/lite6_ws/install/my_lite6_control/lib/my_lite6_control
+[0.868s] Installing sequence_real script to /home/joon/Projects/GDRNPP_bin_picking/lite6_control/lite6_ws/install/my_lite6_control/lib/my_lite6_control
+[0.868s] Installing sequence_real_action script to /home/joon/Projects/GDRNPP_bin_picking/lite6_control/lite6_ws/install/my_lite6_control/lib/my_lite6_control
+[0.869s] Installing sequence_sim script to /home/joon/Projects/GDRNPP_bin_picking/lite6_control/lite6_ws/install/my_lite6_control/lib/my_lite6_control
+[0.869s] Installing sequence_sim_action script to /home/joon/Projects/GDRNPP_bin_picking/lite6_control/lite6_ws/install/my_lite6_control/lib/my_lite6_control
+[0.869s] Installing sequence_sim_action_fix script to /home/joon/Projects/GDRNPP_bin_picking/lite6_control/lite6_ws/install/my_lite6_control/lib/my_lite6_control
+[0.869s] Installing sequence_sim_custom_ik script to /home/joon/Projects/GDRNPP_bin_picking/lite6_control/lite6_ws/install/my_lite6_control/lib/my_lite6_control
+[0.869s] Installing simple_detection script to /home/joon/Projects/GDRNPP_bin_picking/lite6_control/lite6_ws/install/my_lite6_control/lib/my_lite6_control
+[0.869s] Installing target_6d_auto_real script to /home/joon/Projects/GDRNPP_bin_picking/lite6_control/lite6_ws/install/my_lite6_control/lib/my_lite6_control
+[0.869s] Installing view_joint script to /home/joon/Projects/GDRNPP_bin_picking/lite6_control/lite6_ws/install/my_lite6_control/lib/my_lite6_control
+[0.869s] writing list of installed files to '/home/joon/Projects/GDRNPP_bin_picking/lite6_control/lite6_ws/build/my_lite6_control/install.log'
+[0.889s] Invoked command in '/home/joon/Projects/GDRNPP_bin_picking/lite6_control/lite6_ws/src/my_lite6_control' returned '0': PYTHONPATH=/home/joon/Projects/GDRNPP_bin_picking/lite6_control/lite6_ws/build/my_lite6_control/prefix_override:/home/joon/Projects/GDRNPP_bin_picking/lite6_control/lite6_ws/install/my_lite6_control/lib/python3.12/site-packages:${PYTHONPATH} /usr/bin/python3 setup.py egg_info --egg-base ../../build/my_lite6_control build --build-base /home/joon/Projects/GDRNPP_bin_picking/lite6_control/lite6_ws/build/my_lite6_control/build install --record /home/joon/Projects/GDRNPP_bin_picking/lite6_control/lite6_ws/build/my_lite6_control/install.log --single-version-externally-managed
